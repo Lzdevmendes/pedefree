@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
+    "lz_fullstack_donalds": "file:",
     "next": "15.1.6",
     "prisma": "^6.2.1",
     "react": "^19.0.0",
