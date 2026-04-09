@@ -12,7 +12,6 @@ interface RestaurantPageProps {
 const RestaurantPage = async ({ params }: RestaurantPageProps) => {
   const { slug } = await params;
   const restaurant = await db.restaurant.findUnique({ where: { slug } });
-  console.log(slug)
   if (!restaurant) {
     return notFound();
   }
@@ -21,7 +20,7 @@ const RestaurantPage = async ({ params }: RestaurantPageProps) => {
       {/* LOGO E TITULO */}
       <div className="flex flex-col items-center gap-2">
         <Image
-          src={restaurant?.avatarImageUrl}
+          src={restaurant.avatarImageUrl}
           alt={restaurant.name}
           width={82}
           height={82}
