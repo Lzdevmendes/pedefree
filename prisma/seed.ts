@@ -308,6 +308,14 @@ const main = async () => {
         },
       ],
     });
+    await tx.coupon.create({
+      data: {
+        code: "PEDEFREE10",
+        discountPercent: 10,
+        maxUses: 100,
+        restaurantId: restaurant.id,
+      },
+    });
   });
 };
 
