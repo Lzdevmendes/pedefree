@@ -79,6 +79,7 @@ model Order {
   customerName      String?
   customerPhone     String?
   tableNumber       Int?
+  fcmToken          String?
   restaurant        Restaurant        @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   restaurantId      String
   orderProducts     OrderProduct[]
