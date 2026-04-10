@@ -1,12 +1,13 @@
 "use client";
 
 import { OrderStatus } from "@prisma/client";
-import { ClockIcon, LogOutIcon, RefreshCwIcon } from "lucide-react";
+import { ClockIcon, LogOutIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 
 import {
+  cancelOrder,
   getKitchenOrders,
   kitchenLogout,
   updateOrderStatus,
@@ -14,6 +15,7 @@ import {
 
 interface OrderProduct {
   quantity: number;
+  notes?: string | null;
   product: { name: string };
 }
 
@@ -21,6 +23,8 @@ interface Order {
   id: number;
   status: OrderStatus;
   consumptionMethod: string;
+  customerName?: string | null;
+  tableNumber?: number | null;
   createdAt: Date;
   orderProducts: OrderProduct[];
 }
@@ -34,6 +38,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING: "Aguardando",
   IN_PREPARATION: "Em preparo",
   FINISHED: "Pronto",
+  CANCELLED: "Cancelado",
 };
 
 const STATUS_BTN: Partial<Record<OrderStatus, string>> = {
@@ -54,6 +59,7 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isPending, startTransition] = useTransition();
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
 
   const fetchOrders = useCallback(() => {
     startTransition(async () => {
@@ -73,8 +79,16 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
     if (!next) return;
     setUpdatingId(order.id);
     await updateOrderStatus(order.id, next);
-    await fetchOrders();
+    fetchOrders();
     setUpdatingId(null);
+  };
+
+  const handleCancel = async (order: Order) => {
+    if (!confirm(`Cancelar pedido #${order.id}?`)) return;
+    setCancellingId(order.id);
+    await cancelOrder(order.id);
+    fetchOrders();
+    setCancellingId(null);
   };
 
   const handleLogout = async () => {
@@ -93,7 +107,9 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   const OrderCard = ({ order }: { order: Order }) => (
     <div
       className={`rounded-2xl border p-4 shadow-sm ${
-        order.status === "PENDING" ? "border-yellow-200 bg-yellow-50" : "border-blue-200 bg-blue-50"
+        order.status === "PENDING"
+          ? "border-yellow-200 bg-yellow-50"
+          : "border-blue-200 bg-blue-50"
       }`}
     >
       <div className="mb-2 flex items-center justify-between">
@@ -104,30 +120,53 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
         </div>
       </div>
 
-      <p className="mb-3 text-xs font-medium text-muted-foreground">
-        {METHOD_LABEL[order.consumptionMethod] ?? order.consumptionMethod}
-      </p>
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">
+          {METHOD_LABEL[order.consumptionMethod] ?? order.consumptionMethod}
+          {order.tableNumber ? ` · Mesa ${order.tableNumber}` : ""}
+        </p>
+        {order.customerName && (
+          <p className="text-xs text-muted-foreground">{order.customerName}</p>
+        )}
+      </div>
 
-      <ul className="mb-4 space-y-1">
+      <ul className="mb-4 space-y-1.5">
         {order.orderProducts.map((op, i) => (
           <li key={i} className="text-sm">
-            {op.quantity}x {op.product.name}
+            <span className="font-medium">
+              {op.quantity}x {op.product.name}
+            </span>
+            {op.notes && (
+              <p className="text-xs text-muted-foreground">↳ {op.notes}</p>
+            )}
           </li>
         ))}
       </ul>
 
-      {STATUS_NEXT[order.status] && (
-        <Button
-          size="sm"
-          className="w-full rounded-full"
-          disabled={updatingId === order.id}
-          onClick={() => handleAdvanceStatus(order)}
-        >
-          {updatingId === order.id
-            ? "Atualizando..."
-            : STATUS_BTN[order.status]}
-        </Button>
-      )}
+      <div className="flex gap-2">
+        {STATUS_NEXT[order.status] && (
+          <Button
+            size="sm"
+            className="flex-1 rounded-full"
+            disabled={updatingId === order.id || cancellingId === order.id}
+            onClick={() => handleAdvanceStatus(order)}
+          >
+            {updatingId === order.id ? "Atualizando..." : STATUS_BTN[order.status]}
+          </Button>
+        )}
+
+        {(order.status === "PENDING" || order.status === "IN_PREPARATION") && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full text-red-500 hover:bg-red-50 hover:text-red-600"
+            disabled={cancellingId === order.id || updatingId === order.id}
+            onClick={() => handleCancel(order)}
+          >
+            <XCircleIcon size={14} />
+          </Button>
+        )}
+      </div>
     </div>
   );
 
@@ -186,6 +225,10 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
           </p>
         </div>
       )}
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        {STATUS_LABEL.PENDING} · {STATUS_LABEL.IN_PREPARATION} · {STATUS_LABEL.FINISHED}
+      </p>
     </div>
   );
 };
