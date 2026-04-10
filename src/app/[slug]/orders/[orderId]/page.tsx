@@ -1,4 +1,4 @@
-import { CheckCircleIcon, ClockIcon } from "lucide-react";
+import { CheckCircleIcon, ClockIcon, PhoneIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -33,9 +33,7 @@ const OrderConfirmationPage = async ({
     where: { id: orderIdNum },
     include: {
       restaurant: true,
-      orderProducts: {
-        include: { product: true },
-      },
+      orderProducts: { include: { product: true } },
     },
   });
 
@@ -65,10 +63,27 @@ const OrderConfirmationPage = async ({
           </div>
         </div>
 
-        <div className="border-b py-4">
-          <p className="text-xs text-muted-foreground">Restaurante</p>
-          <p className="font-semibold">{order.restaurant.name}</p>
-        </div>
+        {(order.customerName || order.tableNumber || order.customerPhone) && (
+          <div className="border-b py-4 space-y-1">
+            {order.customerName && (
+              <div className="flex items-center gap-2 text-sm">
+                <UserIcon size={13} className="text-muted-foreground" />
+                <span>{order.customerName}</span>
+              </div>
+            )}
+            {order.tableNumber && (
+              <p className="text-sm text-muted-foreground">
+                Mesa {order.tableNumber}
+              </p>
+            )}
+            {order.customerPhone && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <PhoneIcon size={13} />
+                <span>{order.customerPhone}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="border-b py-4">
           <p className="mb-3 text-xs text-muted-foreground">Itens</p>
