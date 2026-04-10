@@ -1,7 +1,12 @@
 "use client";
 
 import { OrderStatus } from "@prisma/client";
-import { CheckCircleIcon, ChefHatIcon, ClockIcon } from "lucide-react";
+import {
+  CheckCircleIcon,
+  ChefHatIcon,
+  ClockIcon,
+  XCircleIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 interface Step {
@@ -11,24 +16,12 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  {
-    status: "PENDING",
-    label: "Pedido recebido",
-    icon: <ClockIcon size={18} />,
-  },
-  {
-    status: "IN_PREPARATION",
-    label: "Em preparo",
-    icon: <ChefHatIcon size={18} />,
-  },
-  {
-    status: "FINISHED",
-    label: "Pronto para retirada",
-    icon: <CheckCircleIcon size={18} />,
-  },
+  { status: "PENDING", label: "Pedido recebido", icon: <ClockIcon size={18} /> },
+  { status: "IN_PREPARATION", label: "Em preparo", icon: <ChefHatIcon size={18} /> },
+  { status: "FINISHED", label: "Pronto!", icon: <CheckCircleIcon size={18} /> },
 ];
 
-const STATUS_ORDER: Record<OrderStatus, number> = {
+const STATUS_ORDER: Partial<Record<OrderStatus, number>> = {
   PENDING: 0,
   IN_PREPARATION: 1,
   FINISHED: 2,
@@ -39,10 +32,7 @@ interface OrderStatusPollerProps {
   initialStatus: OrderStatus;
 }
 
-const OrderStatusPoller = ({
-  orderId,
-  initialStatus,
-}: OrderStatusPollerProps) => {
+const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) => {
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
 
   const poll = useCallback(async () => {
@@ -53,16 +43,31 @@ const OrderStatusPoller = ({
         setStatus(data.status);
       }
     } catch {
-      // silent fail — will retry on next interval
+      // silent fail — retry on next interval
     }
   }, [orderId]);
 
   useEffect(() => {
+    if (status === "FINISHED" || status === "CANCELLED") return;
     const interval = setInterval(poll, 10_000);
     return () => clearInterval(interval);
-  }, [poll]);
+  }, [poll, status]);
 
-  const currentStep = STATUS_ORDER[status];
+  if (status === "CANCELLED") {
+    return (
+      <div className="flex flex-col items-center gap-3 py-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+          <XCircleIcon className="text-red-500" size={24} />
+        </div>
+        <p className="font-semibold text-red-600">Pedido cancelado</p>
+        <p className="text-center text-xs text-muted-foreground">
+          Entre em contato com o estabelecimento caso precise de ajuda.
+        </p>
+      </div>
+    );
+  }
+
+  const currentStep = STATUS_ORDER[status] ?? 0;
 
   return (
     <div className="w-full">
@@ -88,7 +93,9 @@ const OrderStatusPoller = ({
                 {step.icon}
               </div>
               <span
-                className={`text-center text-xs font-medium ${done ? "text-foreground" : "text-muted-foreground"}`}
+                className={`text-center text-xs font-medium ${
+                  done ? "text-foreground" : "text-muted-foreground"
+                }`}
               >
                 {step.label}
               </span>

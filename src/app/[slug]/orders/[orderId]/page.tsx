@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
 
 import OrderStatusPoller from "./components/order-status-poller";
+import RatingForm from "./components/rating-form";
 
 interface OrderConfirmationPageProps {
   params: Promise<{ slug: string; orderId: string }>;
@@ -29,9 +30,8 @@ const OrderConfirmationPage = async ({
     where: { id: orderIdNum },
     include: {
       restaurant: true,
-      orderProducts: {
-        include: { product: true },
-      },
+      orderProducts: { include: { product: true } },
+      rating: { select: { id: true } },
     },
   });
 
@@ -110,6 +110,10 @@ const OrderConfirmationPage = async ({
             initialStatus={order.status}
           />
         </div>
+
+        {order.status === "FINISHED" && !order.rating && (
+          <RatingForm orderId={order.id} />
+        )}
       </div>
 
       <Button asChild className="w-full max-w-sm rounded-full">
