@@ -11,7 +11,8 @@ const main = async () => {
       data: {
         name: "Pedefree",
         slug: "pedefree",
-        description: "O melhor fast food do mundo",
+        description: "Pedidos rápidos e fáceis para o seu dia a dia",
+        primaryColor: "42 100% 50%",
         avatarImageUrl:
           "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQvcNP9rHlEJu1vCY5kLqzjf29HKaeN78Z6pRy",
         coverImageUrl:
@@ -27,16 +28,16 @@ const main = async () => {
     await tx.product.createMany({
       data: [
         {
-          name: "McOferta Média Big Mac Duplo",
+          name: "Combo Duplo Especial",
           description:
-            "Quatro hambúrgueres (100% carne bovina), alface americana, queijo fatiado sabor cheddar, molho especial, cebola, picles e pão com gergilim, acompanhamento e bebida.",
+            "Dois smash burgers de carne 100% bovina, alface americana, queijo fatiado sabor cheddar, molho especial, cebola, picles e pão com gergelim. Acompanha batata e bebida.",
           price: 39.9,
           imageUrl:
             "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQaHB8tslkBUjlHSKiuseLm2hIFzVY0OtxEPnw",
           menuCategoryId: combosCategory.id,
           restaurantId: restaurant.id,
           ingredients: [
-            "Pão com gergilim",
+            "Pão com gergelim",
             "Hambúrguer de carne 100% bovina",
             "Alface americana",
             "Queijo fatiado sabor cheddar",
@@ -46,19 +47,18 @@ const main = async () => {
           ],
         },
         {
-          name: "Novo Brabo Melt Onion Rings",
+          name: "Combo Onion Melt",
           description:
-            "Dois hambúrgueres de carne 100% bovina, méquinese, a exclusiva maionese especial com sabor de carne defumada, onion rings, fatias de bacon, queijo processado sabor cheddar, o delicioso molho lácteo com queijo tipo cheddar tudo isso no pão tipo brioche trazendo uma explosão de sabores pros seus dias de glória! Acompanhamento e Bebida.",
+            "Dois hambúrgueres de carne 100% bovina, maionese defumada especial, onion rings crocantes, fatias de bacon, queijo processado sabor cheddar e molho lácteo cheddar no pão brioche. Acompanha batata e bebida.",
           price: 41.5,
           imageUrl:
             "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQeGQofnEPyQaHEV2WL8rGUs41oMICtYfNkphl",
           menuCategoryId: combosCategory.id,
           restaurantId: restaurant.id,
           ingredients: [
-            "Pão tipo brioche",
+            "Pão brioche",
             "Hambúrguer de carne 100% bovina",
-            "Méquinese",
-            "Maionese especial com sabor de carne defumada",
+            "Maionese defumada especial",
             "Onion rings",
             "Fatias de bacon",
             "Queijo processado sabor cheddar",
@@ -66,29 +66,29 @@ const main = async () => {
           ],
         },
         {
-          name: "McCrispy Chicken Elite",
+          name: "Combo Crispy Chicken Elite",
           description:
-            "Composto por pão tipo brioche com batata, molho Honey&Fire, bacon em fatias, alface, tomate, queijo sabor cheddar e carne 100% de peito de frango, temperada e empanada, acompanhamento e bebida.",
+            "Pão brioche com batata, molho honey fire, bacon em fatias, alface, tomate, queijo cheddar e filé 100% de peito de frango temperado e empanado. Acompanha batata e bebida.",
           price: 39.9,
           imageUrl:
             "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQr12aTqPo3SsGjBJCaM7yhxnbDlXeL5N9dckv",
           menuCategoryId: combosCategory.id,
           restaurantId: restaurant.id,
           ingredients: [
-            "Pão tipo brioche",
-            "Batata",
-            "Molho Honey&Fire",
+            "Pão brioche",
+            "Batata no pão",
+            "Molho honey fire",
             "Bacon em fatias",
             "Alface",
             "Tomate",
             "Queijo sabor cheddar",
-            "Carne 100% de peito de frango",
+            "Filé de peito de frango empanado",
           ],
         },
         {
-          name: "Duplo Cheddar McMelt",
+          name: "Combo Duplo Cheddar Melt",
           description:
-            "Dois hambúrgueres (100% carne bovina), molho lácteo com queijo tipo cheddar, cebola ao molho shoyu e pão escuro com gergelim, acompanhamento e bebida.",
+            "Dois hambúrgueres de carne 100% bovina, molho lácteo com queijo tipo cheddar, cebola ao molho shoyu e pão escuro com gergelim. Acompanha batata e bebida.",
           price: 36.2,
           imageUrl:
             "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQWdq0w8niS9XCLQu7Nb4jvBYZze16goaOqsKR",
@@ -103,7 +103,7 @@ const main = async () => {
         },
       ],
     });
-    const hamburguersCategory = await tx.menuCategory.create({
+    const hamburgersCategory = await tx.menuCategory.create({
       data: {
         name: "Lanches",
         restaurantId: restaurant.id,
@@ -112,11 +112,11 @@ const main = async () => {
     await tx.product.createMany({
       data: [
         {
-          name: "Big Mac",
+          name: "Smash Duplo",
           description:
-            "Quatro hambúrgueres (100% carne bovina), alface americana, queijo fatiado sabor cheddar, molho especial, cebola, picles e pão com gergilim, acompanhamento e bebida.",
+            "Dois smash burgers de carne 100% bovina, alface americana, queijo fatiado sabor cheddar, molho especial, cebola, picles e pão com gergelim.",
           ingredients: [
-            "Pão com gergilim",
+            "Pão com gergelim",
             "Hambúrguer de carne 100% bovina",
             "Alface americana",
             "Queijo fatiado sabor cheddar",
@@ -124,66 +124,61 @@ const main = async () => {
             "Cebola",
             "Picles",
           ],
-          price: 39.9,
+          price: 29.9,
           imageUrl:
             "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQKfI6fivqActTvBGLXfQe4a8CJ6d3HiR7USPK",
-          menuCategoryId: hamburguersCategory.id,
+          menuCategoryId: hamburgersCategory.id,
           restaurantId: restaurant.id,
         },
         {
-          name: "Duplo Quarterão",
+          name: "Smash 160g Duplo",
           description:
-            "Dois hambúrgueres de carne 100% bovina, méquinese, a exclusiva maionese especial com sabor de carne defumada, onion rings, fatias de bacon, queijo processado sabor cheddar, o delicioso molho lácteo com queijo tipo cheddar tudo isso no pão tipo brioche trazendo uma explosão de sabores pros seus dias de glória! Acompanhamento e Bebida.",
+            "Dois hambúrgueres de 160g de carne 100% bovina, maionese defumada especial, onion rings, bacon, queijo cheddar e molho lácteo no pão brioche.",
           ingredients: [
-            "Pão tipo brioche",
-            "Hambúrguer de carne 100% bovina",
-            "Méquinese",
-            "Maionese especial com sabor de carne defumada",
+            "Pão brioche",
+            "Hambúrguer de carne 100% bovina 160g",
+            "Maionese defumada especial",
             "Onion rings",
             "Fatias de bacon",
             "Queijo processado sabor cheddar",
             "Molho lácteo com queijo tipo cheddar",
           ],
-          price: 41.5,
+          price: 32.5,
           imageUrl:
             "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQ99rtECuYaDgmA4VujBU0wKn2ThXJvF3LHfyc",
-          menuCategoryId: hamburguersCategory.id,
+          menuCategoryId: hamburgersCategory.id,
           restaurantId: restaurant.id,
         },
         {
-          name: "McMelt",
+          name: "Cheddar Melt",
           description:
-            "Composto por pão tipo brioche com batata, molho Honey&Fire, bacon em fatias, alface, tomate, queijo sabor cheddar e carne 100% de peito de frango, temperada e empanada, acompanhamento e bebida.",
-          ingredients: [
-            "Pão tipo brioche",
-            "Batata",
-            "Molho Honey&Fire",
-            "Bacon em fatias",
-            "Alface",
-            "Tomate",
-            "Queijo sabor cheddar",
-            "Carne 100% de peito de frango",
-          ],
-          price: 39.9,
-          imageUrl:
-            "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQUY0VlDTmvPeJLoyOjzNsMqFdxUI423nBl6br",
-          menuCategoryId: hamburguersCategory.id,
-          restaurantId: restaurant.id,
-        },
-        {
-          name: "McNífico Bacon",
-          description:
-            "Dois hambúrgueres (100% carne bovina), molho lácteo com queijo tipo cheddar, cebola ao molho shoyu e pão escuro com gergelim, acompanhamento e bebida.",
+            "Hambúrguer de carne 100% bovina, molho lácteo com queijo tipo cheddar, cebola ao molho shoyu e pão escuro com gergelim.",
           ingredients: [
             "Pão escuro com gergelim",
             "Hambúrguer de carne 100% bovina",
             "Molho lácteo com queijo tipo cheddar",
             "Cebola ao molho shoyu",
           ],
-          price: 36.2,
+          price: 27.9,
+          imageUrl:
+            "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQUY0VlDTmvPeJLoyOjzNsMqFdxUI423nBl6br",
+          menuCategoryId: hamburgersCategory.id,
+          restaurantId: restaurant.id,
+        },
+        {
+          name: "Smash Bacon",
+          description:
+            "Dois hambúrgueres de carne 100% bovina, molho lácteo com queijo tipo cheddar, fatias de bacon crocante e pão com gergelim.",
+          ingredients: [
+            "Pão com gergelim",
+            "Hambúrguer de carne 100% bovina",
+            "Molho lácteo com queijo tipo cheddar",
+            "Fatias de bacon crocante",
+          ],
+          price: 30.2,
           imageUrl:
             "https://u9a6wmr3as.ufs.sh/f/jppBrbk0cChQBBmifbjzEVXRoycAtrP9vH45bZ6WDl3QF0a1",
-          menuCategoryId: hamburguersCategory.id,
+          menuCategoryId: hamburgersCategory.id,
           restaurantId: restaurant.id,
         },
       ],
@@ -209,7 +204,7 @@ const main = async () => {
         {
           name: "Fritas Média",
           description:
-            "Batatas fritas crocantes e sequinhas. Vem uma média quantidade!",
+            "Batatas fritas crocantes e sequinhas. Vem uma quantidade certa!",
           ingredients: [],
           price: 9.9,
           imageUrl:
@@ -220,7 +215,7 @@ const main = async () => {
         {
           name: "Fritas Pequena",
           description:
-            "Batatas fritas crocantes e sequinhas. Vem pouquinho (é bom pra sua dieta)!",
+            "Batatas fritas crocantes e sequinhas. Tamanho individual!",
           ingredients: [],
           price: 5.9,
           imageUrl:
@@ -239,8 +234,8 @@ const main = async () => {
     await tx.product.createMany({
       data: [
         {
-          name: "Coca-cola",
-          description: "Coca-cola gelada para acompanhar seu lanche.",
+          name: "Coca-Cola",
+          description: "Coca-Cola gelada para acompanhar seu lanche.",
           ingredients: [],
           price: 5.9,
           imageUrl:
@@ -260,7 +255,7 @@ const main = async () => {
         },
         {
           name: "Água Mineral",
-          description: "A bebida favorita do Cristiano Ronaldo.",
+          description: "Água mineral gelada.",
           ingredients: [],
           price: 2.9,
           imageUrl:
@@ -279,7 +274,7 @@ const main = async () => {
     await tx.product.createMany({
       data: [
         {
-          name: "Casquinha de Baunilha",
+          name: "Casquinha Baunilha",
           description: "Casquinha de sorvete sabor baunilha.",
           ingredients: [],
           price: 3.9,
@@ -289,7 +284,7 @@ const main = async () => {
           restaurantId: restaurant.id,
         },
         {
-          name: "Casquinha de Chocolate",
+          name: "Casquinha Chocolate",
           description: "Casquinha de sorvete sabor chocolate.",
           ingredients: [],
           price: 3.9,
@@ -299,7 +294,7 @@ const main = async () => {
           restaurantId: restaurant.id,
         },
         {
-          name: "Casquinha de Mista",
+          name: "Casquinha Mista",
           description: "Casquinha de sorvete sabor baunilha e chocolate.",
           ingredients: [],
           price: 2.9,
