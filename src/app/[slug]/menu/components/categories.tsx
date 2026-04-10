@@ -1,7 +1,7 @@
 "use client";
 
 import { Prisma } from "@prisma/client";
-import { ClockIcon, SearchIcon, XIcon } from "lucide-react";
+import { ClockIcon, SearchIcon, StarIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -31,6 +31,7 @@ const RestaurantCategories = ({ restaurant }: RestaurantCategoriesProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const allProducts = restaurant.menuCategories.flatMap((c) => c.products);
+  const featuredProducts = allProducts.filter((p) => p.badge);
 
   const filteredProducts = searchQuery.trim()
     ? allProducts.filter(
@@ -92,6 +93,16 @@ const RestaurantCategories = ({ restaurant }: RestaurantCategoriesProps) => {
 
       {!filteredProducts && (
         <>
+          {featuredProducts.length > 0 && (
+            <div className="px-5 pb-2">
+              <div className="mb-3 flex items-center gap-2">
+                <StarIcon size={14} className="text-primary" />
+                <h3 className="font-semibold">Destaques</h3>
+              </div>
+              <Products products={featuredProducts} />
+            </div>
+          )}
+
           <ScrollArea className="w-full">
             <div className="flex w-max space-x-4 p-4 pt-0">
               {restaurant.menuCategories.map((category) => (
