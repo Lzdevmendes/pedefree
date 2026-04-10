@@ -1,9 +1,11 @@
-import { CheckCircleIcon, ClockIcon } from "lucide-react";
+import { ClockIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
+
+import OrderStatusPoller from "./components/order-status-poller";
 
 interface OrderConfirmationPageProps {
   params: Promise<{ slug: string; orderId: string }>;
@@ -14,12 +16,6 @@ const formatCurrency = (value: number) =>
     style: "currency",
     currency: "BRL",
   }).format(value);
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: "Aguardando confirmação",
-  IN_PREPARATION: "Em preparo",
-  FINISHED: "Pronto",
-};
 
 const OrderConfirmationPage = async ({
   params,
@@ -45,11 +41,11 @@ const OrderConfirmationPage = async ({
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-12">
       <div className="flex flex-col items-center gap-2 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-          <CheckCircleIcon className="text-green-600" size={32} />
+          <ClockIcon className="text-green-600" size={32} />
         </div>
         <h1 className="text-2xl font-semibold">Pedido realizado!</h1>
         <p className="text-sm text-muted-foreground">
-          Acompanhe o status do seu pedido abaixo.
+          Acompanhe o status do seu pedido abaixo em tempo real.
         </p>
       </div>
 
@@ -59,15 +55,9 @@ const OrderConfirmationPage = async ({
             <p className="text-xs text-muted-foreground">Pedido</p>
             <p className="font-semibold">#{order.id}</p>
           </div>
-          <div className="flex items-center gap-1 text-xs text-orange-500">
-            <ClockIcon size={12} />
-            <span>{STATUS_LABEL[order.status] ?? order.status}</span>
-          </div>
-        </div>
-
-        <div className="border-b py-4">
-          <p className="text-xs text-muted-foreground">Restaurante</p>
-          <p className="font-semibold">{order.restaurant.name}</p>
+          <p className="text-xs text-muted-foreground">
+            {order.restaurant.name}
+          </p>
         </div>
 
         <div className="border-b py-4">
@@ -86,9 +76,17 @@ const OrderConfirmationPage = async ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center justify-between py-4 border-b">
           <p className="font-semibold">Total</p>
           <p className="font-semibold">{formatCurrency(order.total)}</p>
+        </div>
+
+        <div className="pt-5">
+          <p className="mb-4 text-sm font-semibold">Status do pedido</p>
+          <OrderStatusPoller
+            orderId={order.id}
+            initialStatus={order.status}
+          />
         </div>
       </div>
 
