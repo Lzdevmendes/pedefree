@@ -50,11 +50,13 @@ const Products = ({ products }: ProductsProps) => {
         ))}
       </div>
 
-      <ProductDetails
-        product={selectedProduct!}
-        open={!!selectedProduct}
-        onOpenChange={(open) => !open && setSelectedProduct(null)}
-      />
+      {selectedProduct && (
+        <ProductDetails
+          product={selectedProduct}
+          open={!!selectedProduct}
+          onOpenChange={(open) => !open && setSelectedProduct(null)}
+        />
+      )}
     </>
   );
 };
