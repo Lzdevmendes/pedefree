@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
-import { use } from "react";
+import { use, useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +52,17 @@ const EditRestaurantPage = ({ params }: PageProps) => {
         <div className="space-y-1">
           <Label htmlFor="primaryColor">Cor primária (HSL)</Label>
           <Input id="primaryColor" name="primaryColor" placeholder="42 100% 50%" />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="tableCount">Número de mesas</Label>
+          <Input id="tableCount" name="tableCount" type="number" min={1} placeholder="20" />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="kitchenPassword">
+            Nova senha da cozinha{" "}
+            <span className="text-xs text-muted-foreground">(deixe vazio para manter)</span>
+          </Label>
+          <Input id="kitchenPassword" name="kitchenPassword" type="password" />
         </div>
 
         {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
