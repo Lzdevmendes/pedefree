@@ -1,4 +1,4 @@
-import { ClockIcon } from "lucide-react";
+import { ClockIcon, PhoneIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -60,6 +60,28 @@ const OrderConfirmationPage = async ({
           </p>
         </div>
 
+        {(order.customerName || order.tableNumber || order.customerPhone) && (
+          <div className="space-y-1 border-b py-4">
+            {order.customerName && (
+              <div className="flex items-center gap-2 text-sm">
+                <UserIcon size={13} className="text-muted-foreground" />
+                <span>{order.customerName}</span>
+              </div>
+            )}
+            {order.tableNumber && (
+              <p className="text-sm text-muted-foreground">
+                Mesa {order.tableNumber}
+              </p>
+            )}
+            {order.customerPhone && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <PhoneIcon size={13} />
+                <span>{order.customerPhone}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="border-b py-4">
           <p className="mb-3 text-xs text-muted-foreground">Itens</p>
           <div className="space-y-2">
@@ -76,7 +98,7 @@ const OrderConfirmationPage = async ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between py-4 border-b">
+        <div className="flex items-center justify-between border-b py-4">
           <p className="font-semibold">Total</p>
           <p className="font-semibold">{formatCurrency(order.total)}</p>
         </div>

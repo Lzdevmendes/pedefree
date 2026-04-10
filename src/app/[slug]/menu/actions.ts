@@ -10,12 +10,18 @@ interface CreateOrderInput {
   restaurantId: string;
   consumptionMethod: ConsumptionMethod;
   items: CartItem[];
+  customerName: string;
+  customerPhone?: string;
+  tableNumber?: number;
 }
 
 export const createOrder = async ({
   restaurantId,
   consumptionMethod,
   items,
+  customerName,
+  customerPhone,
+  tableNumber,
 }: CreateOrderInput): Promise<{ orderId: number; slug: string }> => {
   const total = items.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
@@ -28,6 +34,9 @@ export const createOrder = async ({
       status: "PENDING",
       consumptionMethod,
       restaurantId,
+      customerName,
+      customerPhone,
+      tableNumber,
       orderProducts: {
         createMany: {
           data: items.map((item) => ({
