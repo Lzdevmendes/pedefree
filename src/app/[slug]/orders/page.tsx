@@ -1,6 +1,6 @@
 "use client";
 
-import { ClockIcon, SearchIcon } from "lucide-react";
+import { ChevronLeftIcon, ClockIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -45,7 +45,11 @@ const METHOD_LABEL: Record<string, string> = {
   TAKEAWAY: "Para levar",
 };
 
-export default function OrderHistoryPage() {
+interface OrderHistoryPageProps {
+  onBack?: () => void;
+}
+
+export default function OrderHistoryPage({ onBack }: OrderHistoryPageProps = {}) {
   const params = useParams();
   const slug = params.slug as string;
   const [phone, setPhone] = useState("");
@@ -64,6 +68,15 @@ export default function OrderHistoryPage() {
 
   return (
     <div className="min-h-screen px-5 py-8">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeftIcon size={16} />
+          Voltar
+        </button>
+      )}
       <h1 className="mb-1 text-xl font-semibold">Meus pedidos</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Digite seu telefone para ver seus pedidos anteriores.
