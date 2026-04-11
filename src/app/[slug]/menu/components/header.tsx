@@ -14,11 +14,13 @@ import CartSheet from "./cart-sheet";
 interface RestaurantHeaderProps {
   restaurant: Pick<Restaurant, "id" | "name" | "coverImageUrl">;
   consumptionMethod: ConsumptionMethod;
+  onBack?: () => void;
 }
 
 const RestaurantHeader = ({
   restaurant,
   consumptionMethod,
+  onBack,
 }: RestaurantHeaderProps) => {
   const router = useRouter();
   const { totalItems } = useCart();
@@ -31,7 +33,7 @@ const RestaurantHeader = ({
           variant="secondary"
           size="icon"
           className="absolute left-4 top-4 z-50 rounded-full"
-          onClick={() => router.back()}
+          onClick={onBack ?? (() => router.back())}
         >
           <ChevronLeftIcon />
         </Button>
