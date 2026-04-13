@@ -14,6 +14,7 @@ Desenvolvido para estabelecimentos da sua cidade que precisam de uma solução s
 | ORM | Prisma 6 |
 | Estilização | Tailwind CSS + shadcn/ui |
 | Autenticação | HMAC-SHA256 + bcryptjs |
+| Notificações push | Firebase Cloud Messaging (FCM) |
 | Linguagem | TypeScript 5 |
 | Infra local | Docker Compose |
 
@@ -23,10 +24,12 @@ Desenvolvido para estabelecimentos da sua cidade que precisam de uma solução s
 
 ### Cardápio do cliente
 - Cardápio digital acessível por QR code de mesa ou link direto
+- Navegação SPA sem recarregamento de página
 - Busca de produtos em tempo real
 - Badges de destaque: **Novo**, **Mais pedido**, **Promoção**
 - Seção de destaques automática para produtos com badge
-- Produtos indisponíveis ocultos do cardápio
+- Produtos indisponíveis ocultos automaticamente do cardápio
+- Status **Aberto / Fechado** dinâmico com base nos horários cadastrados
 - Cor primária personalizada por restaurante
 
 ### Pedido
@@ -34,17 +37,21 @@ Desenvolvido para estabelecimentos da sua cidade que precisam de uma solução s
 - Identificação do cliente: nome, telefone e número da mesa
 - Observações por item no carrinho
 - Aplicação de **cupom de desconto** (% de desconto, validade, limite de usos)
-- Confirmação com resumo do pedido
+- Proteção contra uso simultâneo de cupom via transação atômica no banco
+- Confirmação com resumo completo do pedido
 
 ### Rastreamento em tempo real
 - Linha do tempo de status: **Aguardando → Em preparo → Pronto**
-- Polling automático a cada 10 segundos
+- Polling automático a cada 10 segundos (para quando o pedido é finalizado)
+- Notificações push via **Firebase Cloud Messaging** quando o status é atualizado
+- Aviso de **falha de conexão** exibido após tentativas consecutivas sem resposta
 - Aviso imediato caso o pedido seja **cancelado**
 
 ### Avaliação pós-pedido
 - Formulário de 1 a 5 estrelas disponível após o pedido ser concluído
 - Campo de comentário opcional
 - Avaliação registrada apenas uma vez por pedido
+- Botões de estrela com suporte a leitores de tela (ARIA)
 
 ### Histórico de pedidos
 - Busca de pedidos por número de telefone do cliente
@@ -55,7 +62,7 @@ Desenvolvido para estabelecimentos da sua cidade que precisam de uma solução s
 - Botão para avançar status do pedido
 - Botão para **cancelar** pedido (com confirmação)
 - Exibe observações por item e número da mesa
-- Atualização automática a cada 30 segundos
+- Polling adaptativo: **15s** com pedidos ativos, **30s** quando ocioso
 
 ### Gerador de QR Code
 - Página para gerar QR codes por número de mesa
@@ -74,6 +81,7 @@ Desenvolvido para estabelecimentos da sua cidade que precisam de uma solução s
 ### PWA
 - App instalável em celular via `manifest.json`
 - Meta tags completas para iOS e Android
+- Ícones otimizados para tela inicial
 - Tema e cor configurados
 
 ---
@@ -87,7 +95,7 @@ Desenvolvido para estabelecimentos da sua cidade que precisam de uma solução s
 | Senha da cozinha | Hash **bcrypt** armazenado no banco, jamais o texto puro |
 | Autenticação da cozinha | Cookie signed por slug, verificado no middleware |
 | Middleware | Valida assinatura antes de qualquer rota protegida |
-| Cupons | Validação de limite de usos e validade no servidor |
+| Cupons | Validação de limite de usos e validade no servidor via transação atômica |
 
 > **Produção**: gere o hash da senha admin com:
 > ```bash
@@ -113,13 +121,10 @@ npm install
 
 ### 2. Configure o ambiente
 
-Crie o `.env` baseado nas variáveis abaixo:
+Copie o `.env.example` e preencha as variáveis:
 
-```env
-DATABASE_URL="postgresql://pedefree:pedefree123@localhost:5433/pedefree?schema=public"
-NEXTAUTH_SECRET="gere-uma-chave-aleatoria-forte"
-ADMIN_EMAIL="seu@email.com"
-ADMIN_PASSWORD="senha-temporaria"   # substitua por ADMIN_PASSWORD_HASH em produção
+```bash
+cp .env.example .env
 ```
 
 ### 3. Suba o banco
@@ -150,12 +155,12 @@ Acesse: `http://localhost:3000`
 | Rota | Descrição |
 |---|---|
 | `/` | Página inicial |
-| `/{slug}` | Escolha método (mesa ou retirada) |
-| `/{slug}/menu?consumptionMethod=DINE_IN` | Cardápio |
-| `/{slug}/orders/{id}` | Confirmação e rastreamento |
+| `/{slug}` | Boas-vindas + escolha do método (mesa ou retirada) |
+| `/{slug}?consumptionMethod=DINE_IN` | Abre direto no cardápio (via QR code de mesa) |
+| `/{slug}/orders/{id}` | Confirmação e rastreamento do pedido |
 | `/{slug}/orders` | Histórico por telefone |
-| `/{slug}/kitchen` | Painel da cozinha (senha) |
-| `/{slug}/qrcode` | Gerador de QR codes |
+| `/{slug}/kitchen` | Painel da cozinha (protegido por senha) |
+| `/{slug}/qrcode` | Gerador de QR codes por mesa |
 | `/admin` | Painel administrativo |
 | `/admin/restaurants/{id}/analytics` | Analytics do restaurante |
 
@@ -173,15 +178,19 @@ src/
 │   │           └── edit/
 │   ├── api/orders/          # API route de status do pedido
 │   └── [slug]/              # Rotas públicas por restaurante
+│       ├── restaurant-app.tsx   # SPA wrapper (welcome / menu / orders)
 │       ├── menu/            # Cardápio + carrinho
 │       ├── kitchen/         # Painel da cozinha
-│       ├── orders/          # Histórico e confirmação
+│       ├── orders/          # Histórico e confirmação de pedido
 │       └── qrcode/          # Gerador de QR
 ├── components/ui/           # shadcn/ui
 ├── contexts/                # Cart context
 └── lib/
     ├── prisma.ts            # Client do banco
     ├── session.ts           # HMAC sign/verify
+    ├── firebase.ts          # Firebase client (FCM)
+    ├── firebase-admin.ts    # Firebase Admin SDK (envio de push)
+    ├── use-fcm-token.ts     # Hook para coletar token FCM
     └── utils.ts
 prisma/
 ├── schema.prisma            # Modelos do banco
@@ -200,16 +209,27 @@ prisma/
 | `ADMIN_EMAIL` | Sim | Email do administrador |
 | `ADMIN_PASSWORD` | Dev | Senha em texto plano (só para desenvolvimento) |
 | `ADMIN_PASSWORD_HASH` | Produção | Hash bcrypt da senha admin |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Opcional | Chave pública do projeto Firebase |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Opcional | Domínio de autenticação Firebase |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Opcional | ID do projeto Firebase |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Opcional | Bucket de armazenamento Firebase |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Opcional | Sender ID do FCM |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Opcional | App ID do Firebase |
+| `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | Opcional | Chave VAPID para Web Push |
+| `FIREBASE_PROJECT_ID` | Opcional | ID do projeto (Admin SDK) |
+| `FIREBASE_CLIENT_EMAIL` | Opcional | Email da conta de serviço (Admin SDK) |
+| `FIREBASE_PRIVATE_KEY` | Opcional | Chave privada da conta de serviço (Admin SDK) |
+
+> As variáveis Firebase são opcionais. Sem elas, o sistema funciona normalmente — apenas sem notificações push.
 
 ---
 
 ## Roadmap
 
 - [ ] Integração com pagamento (Pix via Mercado Pago ou Stripe)
-- [ ] Notificações push para o cliente via Firebase Cloud Messaging
 - [ ] Suporte a múltiplos admins por restaurante (multi-tenant)
-- [ ] Upload de imagens integrado (Uploadthing já configurado no .env)
-- [ ] Service Worker para cache offline PWA
+- [ ] Upload de imagens integrado
+- [ ] Cache offline via Service Worker (PWA completo)
 
 ---
 
