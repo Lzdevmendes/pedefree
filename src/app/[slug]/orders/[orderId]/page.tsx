@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
 
+import { OrderAgainButton } from "./components/order-again-button";
 import OrderStatusPoller from "./components/order-status-poller";
 import RatingForm from "./components/rating-form";
 import { WhatsAppButton } from "./components/whatsapp-button";
@@ -119,8 +120,13 @@ const OrderConfirmationPage = async ({
 
       <div className="w-full max-w-sm space-y-3">
         <WhatsAppButton order={order} />
-        <Button asChild className="h-12 w-full rounded-full">
-          <Link href={`/${slug}`}>Fazer novo pedido</Link>
+        <OrderAgainButton
+          slug={slug}
+          consumptionMethod={order.consumptionMethod}
+          products={order.orderProducts.map((op) => ({ product: op.product, quantity: op.quantity }))}
+        />
+        <Button asChild variant="ghost" className="h-12 w-full rounded-full">
+          <Link href={`/${slug}`}>Ir para o cardápio</Link>
         </Button>
       </div>
     </div>
