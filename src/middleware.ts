@@ -1,65 +1,70 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 const SECRET =
   process.env.NEXTAUTH_SECRET ?? "changeme-set-NEXTAUTH_SECRET-in-env";
 
-function verifyAdminToken(token: string): boolean {
+/** Converts a hex string to Uint8Array */
+function hexToBytes(hex: string): Uint8Array {
+  const pairs = hex.match(/.{1,2}/g) ?? [];
+  return new Uint8Array(pairs.map((b) => parseInt(b, 16)));
+}
+
+/** Verifies an HMAC-SHA256 token using the Web Crypto API (Edge Runtime compatible) */
+async function verifyToken(token: string): Promise<boolean> {
   try {
-    const decoded = Buffer.from(token, "base64").toString("utf-8");
+    const decoded = atob(token);
     const parts = decoded.split(":");
     if (parts.length < 4) return false;
 
     const sig = parts.pop()!;
     const payload = parts.join(":");
-    const expected = crypto
-      .createHmac("sha256", SECRET)
-      .update(payload)
-      .digest("hex");
 
-    if (sig.length !== expected.length) return false;
-    return crypto.timingSafeEqual(
-      Buffer.from(sig, "hex"),
-      Buffer.from(expected, "hex"),
+    const encoder = new TextEncoder();
+    const key = await globalThis.crypto.subtle.importKey(
+      "raw",
+      encoder.encode(SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"],
+    );
+
+    return await globalThis.crypto.subtle.verify(
+      "HMAC",
+      key,
+      hexToBytes(sig),
+      encoder.encode(payload),
     );
   } catch {
     return false;
   }
 }
 
-function verifyKitchenToken(token: string, slug: string): boolean {
+/** Returns the slug encoded in the kitchen token, or null if invalid */
+async function verifyKitchenToken(
+  token: string,
+  slug: string,
+): Promise<boolean> {
   try {
-    const decoded = Buffer.from(token, "base64").toString("utf-8");
+    const decoded = atob(token);
     const parts = decoded.split(":");
     if (parts.length < 4) return false;
 
-    const sig = parts.pop()!;
-    const payload = parts.join(":");
-    const expected = crypto
-      .createHmac("sha256", SECRET)
-      .update(payload)
-      .digest("hex");
+    const tokenSlug = parts[1]; // kitchen:{slug}:{timestamp}:{sig}
+    if (tokenSlug !== slug) return false;
 
-    if (sig.length !== expected.length) return false;
-    const valid = crypto.timingSafeEqual(
-      Buffer.from(sig, "hex"),
-      Buffer.from(expected, "hex"),
-    );
-
-    // garante que o token é para o slug correto
-    return valid && parts[1] === slug;
+    return verifyToken(token);
   } catch {
     return false;
   }
 }
 
-export const middleware = (request: NextRequest) => {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // proteção do painel admin
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const session = request.cookies.get("admin_session");
-    if (!session?.value || !verifyAdminToken(session.value)) {
+    if (!session?.value || !(await verifyToken(session.value))) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
@@ -69,14 +74,16 @@ export const middleware = (request: NextRequest) => {
   if (kitchenMatch) {
     const slug = kitchenMatch[1];
     const kitchenCookie = request.cookies.get(`kitchen_${slug}`);
-    if (!kitchenCookie?.value || !verifyKitchenToken(kitchenCookie.value, slug)) {
-      // deixa passar para a página mostrar o password-gate
+    if (
+      !kitchenCookie?.value ||
+      !(await verifyKitchenToken(kitchenCookie.value, slug))
+    ) {
       return NextResponse.next();
     }
   }
 
   return NextResponse.next();
-};
+}
 
 export const config = {
   matcher: ["/admin/:path*", "/:slug/kitchen"],
