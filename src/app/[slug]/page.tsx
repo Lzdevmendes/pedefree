@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { db } from "@/lib/prisma";
 
+import RestaurantLoading from "./loading";
 import RestaurantApp from "./restaurant-app";
 
 interface RestaurantPageProps {
@@ -22,7 +24,11 @@ const RestaurantPage = async ({ params }: RestaurantPageProps) => {
   if (!restaurant) {
     return notFound();
   }
-  return <RestaurantApp restaurant={restaurant} />;
+  return (
+    <Suspense fallback={<RestaurantLoading />}>
+      <RestaurantApp restaurant={restaurant} />
+    </Suspense>
+  );
 };
 
 export default RestaurantPage;
