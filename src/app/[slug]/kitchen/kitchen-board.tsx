@@ -68,11 +68,15 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
     });
   }, [slug]);
 
+  const hasActiveOrders = orders.some(
+    (o) => o.status === "PENDING" || o.status === "IN_PREPARATION",
+  );
+
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 30_000);
+    const interval = setInterval(fetchOrders, hasActiveOrders ? 15_000 : 30_000);
     return () => clearInterval(interval);
-  }, [fetchOrders]);
+  }, [fetchOrders, hasActiveOrders]);
 
   const handleAdvanceStatus = async (order: Order) => {
     const next = STATUS_NEXT[order.status];
@@ -224,6 +228,12 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
             Atualiza automaticamente a cada 30 segundos
           </p>
         </div>
+      )}
+
+      {orders.length > 0 && (
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Atualiza a cada {hasActiveOrders ? "15" : "30"} segundos
+        </p>
       )}
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
