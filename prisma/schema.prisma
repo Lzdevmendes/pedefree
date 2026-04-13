@@ -69,6 +69,9 @@ model Product {
   menuCategoryId String
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+
+  @@index([restaurantId, isAvailable])
+  @@index([menuCategoryId, isAvailable])
 }
 
 model Order {
@@ -86,6 +89,9 @@ model Order {
   rating            Rating?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  @@index([restaurantId, createdAt(sort: Desc)])
+  @@index([restaurantId, status])
 }
 
 model OrderProduct {
