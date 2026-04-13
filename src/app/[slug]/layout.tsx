@@ -20,7 +20,7 @@ const SlugLayout = async ({ children, params }: SlugLayoutProps) => {
 
   return (
     <div style={{ "--primary": primaryColor } as React.CSSProperties}>
-      <CartProvider>{children}</CartProvider>
+      <CartProvider slug={slug}>{children}</CartProvider>
     </div>
   );
 };

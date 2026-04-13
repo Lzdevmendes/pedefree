@@ -1,7 +1,7 @@
 "use client";
 
 import { ConsumptionMethod, Product } from "@prisma/client";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 export interface CartItem {
   product: Product;
@@ -25,10 +25,34 @@ interface CartContextType {
 
 export const CartContext = createContext<CartContextType | null>(null);
 
-export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+interface CartProviderProps {
+  children: ReactNode;
+  slug?: string;
+}
+
+export const CartProvider = ({ children, slug }: CartProviderProps) => {
+  const storageKey = slug ? `cart_${slug}` : null;
+
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined" || !slug) return [];
+    try {
+      const saved = localStorage.getItem(`cart_${slug}`);
+      return saved ? (JSON.parse(saved) as CartItem[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [consumptionMethod, setConsumptionMethod] =
     useState<ConsumptionMethod | null>(null);
+
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+    } catch {
+      // quota exceeded ou modo privado
+    }
+  }, [items, storageKey]);
 
   const addItem = (product: Product, notes?: string) => {
     setItems((prev) => {
@@ -72,7 +96,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const clearCart = () => setItems([]);
+  const clearCart = () => {
+    setItems([]);
+    if (storageKey) {
+      try { localStorage.removeItem(storageKey); } catch {}
+    }
+  };
 
   const total = items.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
