@@ -44,11 +44,18 @@ const RatingForm = ({ orderId }: RatingFormProps) => {
     <div className="mt-6 rounded-xl border bg-white p-4">
       <p className="mb-3 text-sm font-semibold">Como foi seu pedido?</p>
 
-      <div className="mb-3 flex justify-center gap-1">
+      <div
+        className="mb-3 flex justify-center gap-1"
+        role="radiogroup"
+        aria-label="Avaliação em estrelas"
+      >
         {[1, 2, 3, 4, 5].map((s) => (
           <button
             key={s}
             type="button"
+            role="radio"
+            aria-checked={stars === s}
+            aria-label={`${s} estrela${s > 1 ? "s" : ""}`}
             onClick={() => setStars(s)}
             onMouseEnter={() => setHovered(s)}
             onMouseLeave={() => setHovered(0)}
