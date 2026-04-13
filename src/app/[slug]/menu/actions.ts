@@ -34,6 +34,7 @@ export const createOrder = async ({
 
   let total = subtotal;
   let appliedCouponId: string | undefined;
+  let couponMaxUses: number | undefined;
 
   if (couponCode) {
     const coupon = await db.coupon.findUnique({
@@ -48,39 +49,51 @@ export const createOrder = async ({
     ) {
       total = subtotal * (1 - coupon.discountPercent / 100);
       appliedCouponId = coupon.id;
+      couponMaxUses = coupon.maxUses;
     }
   }
 
-  const order = await db.order.create({
-    data: {
-      total,
-      status: "PENDING",
-      consumptionMethod,
-      restaurantId,
-      customerName,
-      customerPhone,
-      tableNumber,
-      fcmToken: fcmToken ?? null,
-      orderProducts: {
-        createMany: {
-          data: items.map((item) => ({
-            productId: item.product.id,
-            quantity: item.quantity,
-            price: item.product.price,
-            notes: item.notes,
-          })),
+  const { order } = await db.$transaction(async (tx) => {
+    if (appliedCouponId && couponMaxUses !== undefined) {
+      const updated = await tx.coupon.updateMany({
+        where: {
+          id: appliedCouponId,
+          isActive: true,
+          usedCount: { lt: couponMaxUses },
+        },
+        data: { usedCount: { increment: 1 } },
+      });
+      if (updated.count === 0) {
+        throw new Error("Cupom não disponível");
+      }
+    }
+
+    const createdOrder = await tx.order.create({
+      data: {
+        total,
+        status: "PENDING",
+        consumptionMethod,
+        restaurantId,
+        customerName,
+        customerPhone,
+        tableNumber,
+        fcmToken: fcmToken ?? null,
+        orderProducts: {
+          createMany: {
+            data: items.map((item) => ({
+              productId: item.product.id,
+              quantity: item.quantity,
+              price: item.product.price,
+              notes: item.notes,
+            })),
+          },
         },
       },
-    },
-    include: { restaurant: true },
-  });
-
-  if (appliedCouponId) {
-    await db.coupon.update({
-      where: { id: appliedCouponId },
-      data: { usedCount: { increment: 1 } },
+      include: { restaurant: true },
     });
-  }
+
+    return { order: createdOrder };
+  });
 
   return { orderId: order.id, slug: order.restaurant.slug };
 };
