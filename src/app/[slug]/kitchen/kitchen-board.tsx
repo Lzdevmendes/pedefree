@@ -1,8 +1,8 @@
 "use client";
 
 import { OrderStatus } from "@prisma/client";
-import { ClockIcon, LogOutIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { BellIcon, ClockIcon, LogOutIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +12,29 @@ import {
   kitchenLogout,
   updateOrderStatus,
 } from "./actions";
+
+function playNotificationSound() {
+  try {
+    const ctx = new AudioContext();
+    const beep = (delay: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.35);
+    };
+    beep(0);
+    beep(0.45);
+    setTimeout(() => ctx.close(), 3000);
+  } catch {
+    // Web Audio não disponível (SSR ou permissão negada)
+  }
+}
 
 interface OrderProduct {
   quantity: number;
@@ -53,13 +76,26 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   const [isPending, startTransition] = useTransition();
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const knownOrderIds = useRef<Set<number>>(new Set());
+  const isFirstFetch = useRef(true);
 
   const fetchOrders = useCallback(() => {
     startTransition(async () => {
       const data = await getKitchenOrders(slug);
-      setOrders(data as Order[]);
+      const incoming = data as Order[];
+
+      if (!isFirstFetch.current && soundEnabled) {
+        const newOrders = incoming.filter((o) => !knownOrderIds.current.has(o.id));
+        if (newOrders.length > 0) {
+          playNotificationSound();
+        }
+      }
+      isFirstFetch.current = false;
+      knownOrderIds.current = new Set(incoming.map((o) => o.id));
+      setOrders(incoming);
     });
-  }, [slug]);
+  }, [slug, soundEnabled]);
 
   const hasActiveOrders = orders.some(
     (o) => o.status === "PENDING" || o.status === "IN_PREPARATION",
@@ -173,6 +209,16 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Painel da Cozinha</h1>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className={`h-11 w-11 rounded-full ${soundEnabled ? "" : "opacity-40"}`}
+              onClick={() => setSoundEnabled((v) => !v)}
+              aria-label={soundEnabled ? "Silenciar alertas" : "Ativar alertas"}
+              title={soundEnabled ? "Alertas sonoros: ligado" : "Alertas sonoros: desligado"}
+            >
+              <BellIcon size={18} />
+            </Button>
             <Button
               variant="outline"
               size="icon"
