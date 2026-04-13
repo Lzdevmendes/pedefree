@@ -16,6 +16,7 @@ const RestaurantPage = async ({ params }: RestaurantPageProps) => {
       menuCategories: {
         include: { products: { where: { isAvailable: true } } },
       },
+      openingHours: true,
     },
   });
   if (!restaurant) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Prisma } from "@prisma/client";
+import { OpeningHours, Prisma } from "@prisma/client";
 import { ClockIcon, SearchIcon, StarIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -19,16 +19,56 @@ interface RestaurantCategoriesProps {
       };
     };
   }>;
+  openingHours?: OpeningHours[];
 }
 
 type MenuCategoriesWithProducts = Prisma.MenuCategoryGetPayload<{
   include: { products: true };
 }>;
 
-const RestaurantCategories = ({ restaurant }: RestaurantCategoriesProps) => {
+function getOpenStatus(openingHours: OpeningHours[] | undefined): {
+  isOpen: boolean;
+  label: string;
+} {
+  if (!openingHours || openingHours.length === 0) {
+    return { isOpen: true, label: "Aberto!" };
+  }
+
+  const now = new Date();
+  const day = now.getDay(); // 0 = domingo, 6 = sábado
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const currentTime = `${hours}:${minutes}`;
+
+  const todayHours = openingHours.find((h) => h.dayOfWeek === day);
+
+  if (!todayHours || todayHours.isClosed) {
+    return { isOpen: false, label: "Fechado hoje" };
+  }
+
+  if (currentTime >= todayHours.openTime && currentTime <= todayHours.closeTime) {
+    return {
+      isOpen: true,
+      label: `Aberto até ${todayHours.closeTime}`,
+    };
+  }
+
+  if (currentTime < todayHours.openTime) {
+    return {
+      isOpen: false,
+      label: `Abre às ${todayHours.openTime}`,
+    };
+  }
+
+  return { isOpen: false, label: "Fechado agora" };
+}
+
+const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategoriesProps) => {
   const [selectedCategory, setSelectedCategory] =
     useState<MenuCategoriesWithProducts>(restaurant.menuCategories[0]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { isOpen, label } = getOpenStatus(openingHours);
 
   const allProducts = restaurant.menuCategories.flatMap((c) => c.products);
   const featuredProducts = allProducts.filter((p) => p.badge);
@@ -64,9 +104,13 @@ const RestaurantCategories = ({ restaurant }: RestaurantCategoriesProps) => {
             <p className="text-xs opacity-55">{restaurant.description}</p>
           </div>
         </div>
-        <div className="mt-3 flex items-center gap-1 text-xs text-green-500">
+        <div
+          className={`mt-3 flex items-center gap-1 text-xs ${
+            isOpen ? "text-green-500" : "text-red-500"
+          }`}
+        >
           <ClockIcon size={12} />
-          <p>Aberto!</p>
+          <p>{label}</p>
         </div>
 
         <div className="relative mt-4">
@@ -84,6 +128,7 @@ const RestaurantCategories = ({ restaurant }: RestaurantCategoriesProps) => {
             <button
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={() => setSearchQuery("")}
+              aria-label="Limpar busca"
             >
               <XIcon size={14} />
             </button>

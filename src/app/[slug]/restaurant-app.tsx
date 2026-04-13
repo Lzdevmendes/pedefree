@@ -13,7 +13,10 @@ import OrderHistoryPage from "./orders/page";
 type Page = "welcome" | "menu" | "orders";
 
 type RestaurantWithMenu = Prisma.RestaurantGetPayload<{
-  include: { menuCategories: { include: { products: true } } };
+  include: {
+    menuCategories: { include: { products: true } };
+    openingHours: true;
+  };
 }>;
 
 interface RestaurantAppProps {
@@ -44,7 +47,10 @@ export default function RestaurantApp({ restaurant }: RestaurantAppProps) {
           consumptionMethod={consumptionMethod}
           onBack={() => setPage("welcome")}
         />
-        <RestaurantCategories restaurant={restaurant} />
+        <RestaurantCategories
+          restaurant={restaurant}
+          openingHours={restaurant.openingHours}
+        />
       </div>
     );
   }
