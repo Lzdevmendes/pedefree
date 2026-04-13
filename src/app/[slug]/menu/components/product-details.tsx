@@ -48,36 +48,36 @@ const ProductDetails = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="max-h-[90vh] overflow-y-auto rounded-t-2xl p-0"
+        className="max-h-[88vh] overflow-y-auto rounded-t-2xl p-0 pb-safe"
       >
-        <div className="relative h-[300px] w-full bg-gray-100">
+        {/* Imagem menor em telas pequenas */}
+        <div className="relative h-[200px] w-full bg-gray-100 sm:h-[260px]">
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
-            className="object-contain p-8"
+            className="object-contain p-6"
           />
         </div>
 
         <div className="p-5">
-          <SheetHeader className="mb-3 text-left">
-            <SheetTitle className="text-xl">{product.name}</SheetTitle>
+          <SheetHeader className="mb-2 text-left">
+            <SheetTitle className="text-xl leading-tight">{product.name}</SheetTitle>
           </SheetHeader>
 
-          <p className="text-sm text-muted-foreground">{product.description}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {product.description}
+          </p>
 
           {product.ingredients.length > 0 && (
-            <div className="mt-5">
+            <div className="mt-4">
               <div className="flex items-center gap-2">
-                <ChefHatIcon size={16} />
+                <ChefHatIcon size={15} />
                 <h3 className="text-sm font-semibold">Ingredientes</h3>
               </div>
               <ul className="mt-2 list-inside list-disc space-y-1">
                 {product.ingredients.map((ingredient) => (
-                  <li
-                    key={ingredient}
-                    className="text-sm text-muted-foreground"
-                  >
+                  <li key={ingredient} className="text-sm text-muted-foreground">
                     {ingredient}
                   </li>
                 ))}
@@ -85,39 +85,41 @@ const ProductDetails = ({
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between">
-            <p className="text-xl font-semibold">
-              {formatCurrency(product.price)}
-            </p>
+          {/* Preço + quantidade */}
+          <div className="mt-5 flex items-center justify-between">
+            <p className="text-2xl font-bold">{formatCurrency(product.price)}</p>
 
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 rounded-full"
+                className="h-11 w-11 rounded-full"
                 disabled={quantity <= 1}
                 onClick={() => setQuantity((q) => q - 1)}
+                aria-label="Diminuir quantidade"
               >
-                <MinusIcon size={16} />
+                <MinusIcon size={18} />
               </Button>
-              <span className="w-5 text-center font-semibold">{quantity}</span>
+              <span className="w-6 text-center text-lg font-bold">{quantity}</span>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 rounded-full"
+                className="h-11 w-11 rounded-full"
                 onClick={() => setQuantity((q) => q + 1)}
+                aria-label="Aumentar quantidade"
               >
-                <PlusIcon size={16} />
+                <PlusIcon size={18} />
               </Button>
             </div>
           </div>
 
+          {/* Observações */}
           <div className="mt-5">
-            <label className="mb-1 block text-sm font-medium">
+            <label className="mb-1.5 block text-sm font-medium">
               Observações
             </label>
             <textarea
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm leading-relaxed placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               rows={2}
               placeholder="Ex: sem cebola, bem passado..."
               value={notes}
@@ -126,11 +128,10 @@ const ProductDetails = ({
           </div>
 
           <Button
-            className="mt-4 w-full rounded-full"
+            className="mt-4 h-12 w-full rounded-full text-base font-semibold"
             onClick={handleAddToCart}
           >
-            Adicionar ao carrinho •{" "}
-            {formatCurrency(product.price * quantity)}
+            Adicionar • {formatCurrency(product.price * quantity)}
           </Button>
         </div>
       </SheetContent>
