@@ -1,7 +1,7 @@
 "use client";
 
 import { OrderStatus } from "@prisma/client";
-import { BellIcon, ClockIcon, LogOutIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
+import { BellIcon, ClockIcon, ListIcon, LogOutIcon, RefreshCwIcon, UtensilsIcon, XCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import {
   cancelOrder,
   getKitchenOrders,
+  getKitchenProducts,
   kitchenLogout,
+  kitchenToggleProduct,
   updateOrderStatus,
 } from "./actions";
 
@@ -67,15 +69,27 @@ const METHOD_LABEL: Record<string, string> = {
   TAKEAWAY: "Retirada",
 };
 
+type Tab = "orders" | "products";
+
+interface KitchenProduct {
+  id: string;
+  name: string;
+  isAvailable: boolean;
+  menuCategory: { name: string };
+}
+
 interface KitchenBoardProps {
   slug: string;
 }
 
 const KitchenBoard = ({ slug }: KitchenBoardProps) => {
+  const [activeTab, setActiveTab] = useState<Tab>("orders");
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<KitchenProduct[]>([]);
   const [isPending, startTransition] = useTransition();
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [togglingProductId, setTogglingProductId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const knownOrderIds = useRef<Set<number>>(new Set());
   const isFirstFetch = useRef(true);
@@ -127,6 +141,24 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   const handleLogout = async () => {
     await kitchenLogout(slug);
     window.location.reload();
+  };
+
+  const fetchProducts = useCallback(() => {
+    startTransition(async () => {
+      const data = await getKitchenProducts(slug);
+      setProducts(data as KitchenProduct[]);
+    });
+  }, [slug]);
+
+  useEffect(() => {
+    if (activeTab === "products") fetchProducts();
+  }, [activeTab, fetchProducts]);
+
+  const handleToggleProduct = async (product: KitchenProduct) => {
+    setTogglingProductId(product.id);
+    await kitchenToggleProduct(product.id, !product.isAvailable);
+    fetchProducts();
+    setTogglingProductId(null);
   };
 
   const pending = orders.filter((o) => o.status === "PENDING");
@@ -205,7 +237,7 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
       {/* Header */}
-      <div className="sticky top-0 z-10 border-b bg-white px-4 py-4 shadow-sm">
+      <div className="sticky top-0 z-10 border-b bg-white px-4 py-3 shadow-sm">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Painel da Cozinha</h1>
           <div className="flex gap-2">
@@ -240,60 +272,152 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
             </Button>
           </div>
         </div>
+
+        {/* Tab bar */}
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => setActiveTab("orders")}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm font-medium transition ${
+              activeTab === "orders"
+                ? "bg-foreground text-background"
+                : "bg-gray-100 text-muted-foreground"
+            }`}
+          >
+            <ListIcon size={14} />
+            Pedidos
+            {pending.length + (orders.filter((o) => o.status === "IN_PREPARATION").length) > 0 && (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {pending.length + orders.filter((o) => o.status === "IN_PREPARATION").length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("products")}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm font-medium transition ${
+              activeTab === "products"
+                ? "bg-foreground text-background"
+                : "bg-gray-100 text-muted-foreground"
+            }`}
+          >
+            <UtensilsIcon size={14} />
+            Produtos
+          </button>
+        </div>
       </div>
 
       <div className="p-4">
-        {orders.length === 0 && !isPending ? (
-          <div className="mt-16 text-center">
-            <p className="text-lg font-medium text-muted-foreground">
-              Nenhum pedido pendente
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Atualiza automaticamente a cada 30 segundos
-            </p>
-          </div>
-        ) : (
-          /* Mobile: stacked columns, tablet+: side by side */
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-yellow-700">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 text-xs font-bold">
-                  {pending.length}
-                </span>
-                Aguardando
-              </h2>
-              <div className="space-y-3">
-                {pending.length === 0 ? (
-                  <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
-                    Sem pedidos aguardando
-                  </p>
-                ) : (
-                  pending.map((o) => <OrderCard key={o.id} order={o} />)
-                )}
+        {/* PRODUCTS TAB */}
+        {activeTab === "products" && (
+          <div>
+            {products.length === 0 && !isPending ? (
+              <div className="mt-16 text-center">
+                <p className="text-lg font-medium text-muted-foreground">
+                  Nenhum produto cadastrado
+                </p>
               </div>
-            </div>
-
-            <div>
-              <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-blue-700">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold">
-                  {inPrep.length}
-                </span>
-                Em preparo
-              </h2>
-              <div className="space-y-3">
-                {inPrep.length === 0 ? (
-                  <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
-                    Nada em preparo
-                  </p>
-                ) : (
-                  inPrep.map((o) => <OrderCard key={o.id} order={o} />)
-                )}
-              </div>
-            </div>
+            ) : (
+              (() => {
+                const byCategory: Record<string, KitchenProduct[]> = {};
+                for (const p of products) {
+                  const cat = p.menuCategory.name;
+                  if (!byCategory[cat]) byCategory[cat] = [];
+                  byCategory[cat].push(p);
+                }
+                return Object.entries(byCategory).map(([cat, prods]) => (
+                  <div key={cat} className="mb-5">
+                    <h3 className="mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                      {cat}
+                    </h3>
+                    <div className="space-y-2">
+                      {prods.map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 shadow-sm"
+                        >
+                          <span className={`text-sm font-medium ${!p.isAvailable ? "text-muted-foreground line-through" : ""}`}>
+                            {p.name}
+                          </span>
+                          <button
+                            disabled={togglingProductId === p.id}
+                            onClick={() => handleToggleProduct(p)}
+                            className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                              p.isAvailable
+                                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                : "bg-red-100 text-red-600 hover:bg-red-200"
+                            }`}
+                          >
+                            {togglingProductId === p.id
+                              ? "..."
+                              : p.isAvailable
+                              ? "Disponível"
+                              : "Esgotado"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ));
+              })()
+            )}
           </div>
         )}
 
-        {orders.length > 0 && (
+        {/* ORDERS TAB */}
+        {activeTab === "orders" && (
+          <>
+            {orders.length === 0 && !isPending ? (
+              <div className="mt-16 text-center">
+                <p className="text-lg font-medium text-muted-foreground">
+                  Nenhum pedido pendente
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Atualiza automaticamente a cada 30 segundos
+                </p>
+              </div>
+            ) : (
+              /* Mobile: stacked columns, tablet+: side by side */
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-yellow-700">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 text-xs font-bold">
+                      {pending.length}
+                    </span>
+                    Aguardando
+                  </h2>
+                  <div className="space-y-3">
+                    {pending.length === 0 ? (
+                      <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+                        Sem pedidos aguardando
+                      </p>
+                    ) : (
+                      pending.map((o) => <OrderCard key={o.id} order={o} />)
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-blue-700">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold">
+                      {inPrep.length}
+                    </span>
+                    Em preparo
+                  </h2>
+                  <div className="space-y-3">
+                    {inPrep.length === 0 ? (
+                      <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+                        Nada em preparo
+                      </p>
+                    ) : (
+                      inPrep.map((o) => <OrderCard key={o.id} order={o} />)
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "orders" && orders.length > 0 && (
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Atualiza a cada {hasActiveOrders ? "15" : "30"} segundos
           </p>

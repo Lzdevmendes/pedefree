@@ -131,3 +131,21 @@ export const getKitchenOrders = async (slug: string) => {
     orderBy: { createdAt: "asc" },
   });
 };
+
+export const getKitchenProducts = async (slug: string) => {
+  const restaurant = await db.restaurant.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+  if (!restaurant) return [];
+
+  return db.product.findMany({
+    where: { restaurantId: restaurant.id },
+    select: { id: true, name: true, isAvailable: true, menuCategory: { select: { name: true } } },
+    orderBy: [{ menuCategory: { name: "asc" } }, { name: "asc" }],
+  });
+};
+
+export const kitchenToggleProduct = async (productId: string, isAvailable: boolean) => {
+  await db.product.update({ where: { id: productId }, data: { isAvailable } });
+};
