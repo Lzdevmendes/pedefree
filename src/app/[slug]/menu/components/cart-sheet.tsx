@@ -152,6 +152,7 @@ const CartSheet = ({
                           src={product.imageUrl}
                           alt={product.name}
                           fill
+                          sizes="64px"
                           className="object-contain p-1"
                         />
                       </div>

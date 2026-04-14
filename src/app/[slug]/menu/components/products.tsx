@@ -58,6 +58,7 @@ const Products = ({ products }: ProductsProps) => {
                   src={product.imageUrl}
                   alt={product.name}
                   fill
+                  sizes="(max-width: 640px) 88px, 110px"
                   className="rounded-xl object-contain"
                 />
               </div>
