@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useCart } from "@/contexts/cart";
+
 import ConsumptionMethodOption from "./components/consumption-method-option";
 import RestaurantCategories from "./menu/components/categories";
 import RestaurantHeader from "./menu/components/header";
@@ -27,17 +29,20 @@ const VALID_METHODS: ConsumptionMethod[] = ["DINE_IN", "TAKEAWAY"];
 
 export default function RestaurantApp({ restaurant }: RestaurantAppProps) {
   const searchParams = useSearchParams();
+  const { setPrefilledTable } = useCart();
   const [page, setPage] = useState<Page>("welcome");
   const [consumptionMethod, setConsumptionMethod] =
     useState<ConsumptionMethod>("DINE_IN");
 
   useEffect(() => {
     const method = searchParams.get("consumptionMethod")?.toUpperCase();
+    const table = searchParams.get("table");
     if (method && VALID_METHODS.includes(method as ConsumptionMethod)) {
       setConsumptionMethod(method as ConsumptionMethod);
+      if (table) setPrefilledTable(table);
       setPage("menu");
     }
-  }, [searchParams]);
+  }, [searchParams, setPrefilledTable]);
 
   if (page === "menu") {
     return (

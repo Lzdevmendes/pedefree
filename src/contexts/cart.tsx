@@ -21,6 +21,8 @@ interface CartContextType {
   totalItems: number;
   consumptionMethod: ConsumptionMethod | null;
   setConsumptionMethod: (method: ConsumptionMethod) => void;
+  prefilledTable: string | null;
+  setPrefilledTable: (t: string | null) => void;
 }
 
 export const CartContext = createContext<CartContextType | null>(null);
@@ -44,6 +46,7 @@ export const CartProvider = ({ children, slug }: CartProviderProps) => {
   });
   const [consumptionMethod, setConsumptionMethod] =
     useState<ConsumptionMethod | null>(null);
+  const [prefilledTable, setPrefilledTable] = useState<string | null>(null);
 
   useEffect(() => {
     if (!storageKey) return;
@@ -124,6 +127,8 @@ export const CartProvider = ({ children, slug }: CartProviderProps) => {
         totalItems,
         consumptionMethod,
         setConsumptionMethod,
+        prefilledTable,
+        setPrefilledTable,
       }}
     >
       {children}

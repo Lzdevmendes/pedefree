@@ -42,14 +42,14 @@ const CartSheet = ({
   consumptionMethod,
 }: CartSheetProps) => {
   const router = useRouter();
-  const { items, removeItem, increaseQuantity, decreaseQuantity, total, clearCart } =
+  const { items, removeItem, increaseQuantity, decreaseQuantity, total, clearCart, prefilledTable } =
     useCart();
   const fcmToken = useFcmToken();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<Step>("cart");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [tableNumber, setTableNumber] = useState("");
+  const [tableNumber, setTableNumber] = useState(prefilledTable ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [couponCode, setCouponCode] = useState("");
