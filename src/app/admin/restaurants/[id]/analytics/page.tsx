@@ -3,13 +3,11 @@ import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
+import { formatCurrency } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
 const AnalyticsPage = async ({ params }: PageProps) => {
   const { id } = await params;

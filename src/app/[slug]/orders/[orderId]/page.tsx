@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
+import { formatCurrency } from "@/lib/utils";
 
 import { OrderAgainButton } from "./components/order-again-button";
 import OrderStatusPoller from "./components/order-status-poller";
@@ -13,12 +14,6 @@ import { WhatsAppButton } from "./components/whatsapp-button";
 interface OrderConfirmationPageProps {
   params: Promise<{ slug: string; orderId: string }>;
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 
 const OrderConfirmationPage = async ({
   params,

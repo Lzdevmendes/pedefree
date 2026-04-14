@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/cart";
 import { useFcmToken } from "@/lib/use-fcm-token";
+import { formatCurrency } from "@/lib/utils";
 
 import { createOrder } from "../actions";
 import { validateCoupon } from "../coupon-actions";
@@ -26,12 +27,6 @@ interface CartSheetProps {
   restaurantId: string;
   consumptionMethod: ConsumptionMethod;
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 
 type Step = "cart" | "customer";
 

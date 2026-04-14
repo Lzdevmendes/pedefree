@@ -2,6 +2,8 @@
 
 import { MessageCircleIcon } from "lucide-react";
 
+import { formatCurrency } from "@/lib/utils";
+
 const METHOD_LABEL: Record<string, string> = {
   DINE_IN: "Comer aqui",
   TAKEAWAY: "Para levar",
@@ -24,9 +26,6 @@ interface WhatsAppButtonProps {
     restaurant: { name: string };
   };
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
 export function WhatsAppButton({ order }: WhatsAppButtonProps) {
   const lines: string[] = [];

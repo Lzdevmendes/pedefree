@@ -4,6 +4,8 @@ import { Product } from "@prisma/client";
 import Image from "next/image";
 import { useState } from "react";
 
+import { formatCurrency } from "@/lib/utils";
+
 import ProductDetails from "./product-details";
 
 interface ProductsProps {
@@ -15,12 +17,6 @@ const BADGE_CONFIG: Record<string, { label: string; className: string }> = {
   MAIS_PEDIDO: { label: "Mais pedido", className: "bg-primary text-primary-foreground" },
   PROMOCAO: { label: "Promoção", className: "bg-red-500 text-white" },
 };
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 
 const Products = ({ products }: ProductsProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

@@ -13,18 +13,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/cart";
+import { formatCurrency } from "@/lib/utils";
 
 interface ProductDetailsProps {
   product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 
 const ProductDetails = ({
   product,

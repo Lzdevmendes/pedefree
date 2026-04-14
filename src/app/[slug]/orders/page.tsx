@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/lib/utils";
 
 import { getOrdersByPhone } from "./actions";
 
@@ -21,12 +22,6 @@ interface OrderItem {
     product: { name: string };
   }[];
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 
 const STATUS_LABEL: Record<string, string> = {
   PENDING: "Aguardando",
