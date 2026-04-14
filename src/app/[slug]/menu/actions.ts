@@ -89,7 +89,7 @@ export const createOrder = async ({
           },
         },
       },
-      include: { restaurant: true },
+      include: { restaurant: { select: { slug: true } } },
     });
 
     return { order: createdOrder };
