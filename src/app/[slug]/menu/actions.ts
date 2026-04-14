@@ -6,7 +6,6 @@ import { CartItem } from "@/contexts/cart";
 import { db } from "@/lib/prisma";
 
 interface CreateOrderInput {
-  slug: string;
   restaurantId: string;
   consumptionMethod: ConsumptionMethod;
   items: CartItem[];
@@ -18,14 +17,7 @@ interface CreateOrderInput {
 }
 
 export const createOrder = async ({
-  restaurantId,
-  consumptionMethod,
-  items,
-  customerName,
-  customerPhone,
-  tableNumber,
-  couponCode,
-  fcmToken,
+  restaurantId, consumptionMethod, items, customerName, customerPhone, tableNumber, couponCode, fcmToken,
 }: CreateOrderInput): Promise<{ orderId: number; slug: string }> => {
   const subtotal = items.reduce(
     (acc, item) => acc + item.product.price * item.quantity,

@@ -95,7 +95,6 @@ const CartSheet = ({
 
     startTransition(async () => {
       const { orderId, slug } = await createOrder({
-        slug: "",
         restaurantId,
         consumptionMethod,
         items,
