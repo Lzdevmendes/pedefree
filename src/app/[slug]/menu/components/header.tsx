@@ -42,6 +42,8 @@ const RestaurantHeader = ({
           src={restaurant.coverImageUrl}
           alt={restaurant.name}
           fill
+          priority
+          sizes="100vw"
           className="object-cover"
         />
 
