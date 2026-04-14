@@ -3,7 +3,7 @@
 import { OpeningHours, Prisma } from "@prisma/client";
 import { ClockIcon, SearchIcon, StarIcon, XIcon } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,17 +67,18 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
   const [selectedCategory, setSelectedCategory] =
     useState<MenuCategoriesWithProducts>(restaurant.menuCategories[0]);
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredQuery = useDeferredValue(searchQuery);
 
   const { isOpen, label } = getOpenStatus(openingHours);
 
   const allProducts = restaurant.menuCategories.flatMap((c) => c.products);
   const featuredProducts = allProducts.filter((p) => p.badge);
 
-  const filteredProducts = searchQuery.trim()
+  const filteredProducts = deferredQuery.trim()
     ? allProducts.filter(
         (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase()),
+          p.name.toLowerCase().includes(deferredQuery.toLowerCase()) ||
+          p.description.toLowerCase().includes(deferredQuery.toLowerCase()),
       )
     : null;
 
