@@ -247,17 +247,7 @@ export const toggleProductAvailability = async (
   productId: string,
   restaurantId: string,
 ) => {
-  const product = await db.product.findUnique({
-    where: { id: productId },
-    select: { isAvailable: true },
-  });
-  if (!product) return;
-
-  await db.product.update({
-    where: { id: productId },
-    data: { isAvailable: !product.isAvailable },
-  });
-
+  await db.$executeRaw`UPDATE "Product" SET "isAvailable" = NOT "isAvailable" WHERE id = ${productId}`;
   revalidatePath(`/admin/restaurants/${restaurantId}`);
 };
 
@@ -300,17 +290,7 @@ export const createCoupon = async (
 };
 
 export const toggleCoupon = async (couponId: string, restaurantId: string) => {
-  const coupon = await db.coupon.findUnique({
-    where: { id: couponId },
-    select: { isActive: true },
-  });
-  if (!coupon) return;
-
-  await db.coupon.update({
-    where: { id: couponId },
-    data: { isActive: !coupon.isActive },
-  });
-
+  await db.$executeRaw`UPDATE "Coupon" SET "isActive" = NOT "isActive" WHERE id = ${couponId}`;
   revalidatePath(`/admin/restaurants/${restaurantId}`);
 };
 

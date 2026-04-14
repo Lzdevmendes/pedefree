@@ -138,9 +138,7 @@ export const kitchenToggleProduct = async (productId: string, isAvailable: boole
 };
 
 export const toggleRestaurantPause = async (slug: string) => {
-  const restaurant = await db.restaurant.findUnique({ where: { slug }, select: { id: true, isPaused: true } });
-  if (!restaurant) return;
-  await db.restaurant.update({ where: { id: restaurant.id }, data: { isPaused: !restaurant.isPaused } });
+  await db.$executeRaw`UPDATE "Restaurant" SET "isPaused" = NOT "isPaused" WHERE slug = ${slug}`;
 };
 
 export const getRestaurantPauseStatus = async (slug: string): Promise<boolean> => {
