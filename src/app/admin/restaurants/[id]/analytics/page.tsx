@@ -20,26 +20,34 @@ const AnalyticsPage = async ({ params }: PageProps) => {
   const startOf7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const startOf30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const [ordersToday, orders7d, orders30d, topProducts, recentOrders] = await Promise.all([
-    db.order.findMany({
+  const [statsToday, stats7d, stats30d, topProducts, recentOrders] = await Promise.all([
+    db.order.aggregate({
       where: { restaurantId: id, createdAt: { gte: startOfToday }, status: { not: "CANCELLED" } },
-      select: { total: true },
+      _sum: { total: true },
+      _count: { _all: true },
     }),
-    db.order.findMany({
+    db.order.aggregate({
       where: { restaurantId: id, createdAt: { gte: startOf7Days }, status: { not: "CANCELLED" } },
-      select: { total: true },
+      _sum: { total: true },
+      _count: { _all: true },
     }),
-    db.order.findMany({
+    db.order.aggregate({
       where: { restaurantId: id, createdAt: { gte: startOf30Days }, status: { not: "CANCELLED" } },
-      select: { total: true },
+      _sum: { total: true },
+      _count: { _all: true },
     }),
-    db.orderProduct.groupBy({
-      by: ["productId"],
-      where: { order: { restaurantId: id, createdAt: { gte: startOf30Days }, status: { not: "CANCELLED" } } },
-      _sum: { quantity: true },
-      orderBy: { _sum: { quantity: "desc" } },
-      take: 5,
-    }),
+    db.$queryRaw<{ productId: string; name: string; quantity: number }[]>`
+      SELECT op."productId", p.name, SUM(op.quantity)::int AS quantity
+      FROM "OrderProduct" op
+      JOIN "Product" p ON p.id = op."productId"
+      JOIN "Order" o ON o.id = op."orderId"
+      WHERE o."restaurantId" = ${id}
+        AND o."createdAt" >= ${startOf30Days}
+        AND o.status != 'CANCELLED'
+      GROUP BY op."productId", p.name
+      ORDER BY quantity DESC
+      LIMIT 5
+    `,
     db.order.findMany({
       where: { restaurantId: id },
       orderBy: { createdAt: "desc" },
@@ -55,19 +63,6 @@ const AnalyticsPage = async ({ params }: PageProps) => {
       },
     }),
   ]);
-
-  const topProductIds = topProducts.map((p) => p.productId);
-  const topProductDetails = await db.product.findMany({
-    where: { id: { in: topProductIds } },
-    select: { id: true, name: true },
-  });
-  const productNameMap = Object.fromEntries(topProductDetails.map((p) => [p.id, p.name]));
-
-  const sumTotal = (orders: { total: number }[]) =>
-    orders.reduce((acc, o) => acc + o.total, 0);
-
-  const avgOrder = (orders: { total: number }[]) =>
-    orders.length ? sumTotal(orders) / orders.length : 0;
 
   const STATUS_LABEL: Record<string, string> = {
     PENDING: "Aguardando",
@@ -104,19 +99,19 @@ const AnalyticsPage = async ({ params }: PageProps) => {
       <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <p className="text-xs text-muted-foreground">Hoje</p>
-          <p className="text-2xl font-bold">{formatCurrency(sumTotal(ordersToday))}</p>
-          <p className="text-xs text-muted-foreground">{ordersToday.length} pedidos</p>
+          <p className="text-2xl font-bold">{formatCurrency(statsToday._sum.total ?? 0)}</p>
+          <p className="text-xs text-muted-foreground">{statsToday._count._all} pedidos</p>
         </div>
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
-          <p className="text-2xl font-bold">{formatCurrency(sumTotal(orders7d))}</p>
-          <p className="text-xs text-muted-foreground">{orders7d.length} pedidos</p>
+          <p className="text-2xl font-bold">{formatCurrency(stats7d._sum.total ?? 0)}</p>
+          <p className="text-xs text-muted-foreground">{stats7d._count._all} pedidos</p>
         </div>
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <p className="text-xs text-muted-foreground">Últimos 30 dias</p>
-          <p className="text-2xl font-bold">{formatCurrency(sumTotal(orders30d))}</p>
+          <p className="text-2xl font-bold">{formatCurrency(stats30d._sum.total ?? 0)}</p>
           <p className="text-xs text-muted-foreground">
-            Ticket médio: {formatCurrency(avgOrder(orders30d))}
+            Ticket médio: {formatCurrency(stats30d._count._all > 0 ? (stats30d._sum.total ?? 0) / stats30d._count._all : 0)}
           </p>
         </div>
       </div>
@@ -134,11 +129,9 @@ const AnalyticsPage = async ({ params }: PageProps) => {
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                     {idx + 1}
                   </span>
-                  <span className="text-sm font-medium">
-                    {productNameMap[tp.productId] ?? "Produto removido"}
-                  </span>
+                  <span className="text-sm font-medium">{tp.name}</span>
                 </div>
-                <span className="text-sm font-semibold">{tp._sum.quantity ?? 0} vendas</span>
+                <span className="text-sm font-semibold">{tp.quantity} vendas</span>
               </li>
             ))}
           </ul>
