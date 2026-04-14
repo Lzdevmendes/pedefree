@@ -79,6 +79,7 @@ export default function RestaurantApp({ restaurant, isPaused }: RestaurantAppPro
           alt={restaurant.name}
           width={90}
           height={90}
+          priority
           className="rounded-2xl shadow-sm"
         />
         <h2 className="text-lg font-semibold">{restaurant.name}</h2>
