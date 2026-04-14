@@ -98,6 +98,7 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
             alt={restaurant.name}
             height={45}
             width={45}
+            className="rounded-xl"
           />
           <div>
             <h2 className="text-lg font-semibold">{restaurant.name}</h2>
