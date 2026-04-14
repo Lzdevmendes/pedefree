@@ -111,16 +111,9 @@ export const cancelOrder = async (orderId: number) => {
 };
 
 export const getKitchenOrders = async (slug: string) => {
-  const restaurant = await db.restaurant.findUnique({
-    where: { slug },
-    select: { id: true },
-  });
-
-  if (!restaurant) return [];
-
   return db.order.findMany({
     where: {
-      restaurantId: restaurant.id,
+      restaurant: { slug },
       status: { notIn: ["FINISHED", "CANCELLED"] },
     },
     include: {
@@ -133,14 +126,8 @@ export const getKitchenOrders = async (slug: string) => {
 };
 
 export const getKitchenProducts = async (slug: string) => {
-  const restaurant = await db.restaurant.findUnique({
-    where: { slug },
-    select: { id: true },
-  });
-  if (!restaurant) return [];
-
   return db.product.findMany({
-    where: { restaurantId: restaurant.id },
+    where: { restaurant: { slug } },
     select: { id: true, name: true, isAvailable: true, menuCategory: { select: { name: true } } },
     orderBy: [{ menuCategory: { name: "asc" } }, { name: "asc" }],
   });
