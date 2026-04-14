@@ -204,6 +204,37 @@ export const createProduct = async (
   redirect(`/admin/restaurants/${restaurantId}`);
 };
 
+export const updateProduct = async (
+  productId: string,
+  restaurantId: string,
+  _prev: { error?: string },
+  formData: FormData,
+): Promise<{ error?: string }> => {
+  const name = (formData.get("name") as string).trim();
+  const description = (formData.get("description") as string).trim();
+  const price = parseFloat(formData.get("price") as string);
+  const imageUrl = (formData.get("imageUrl") as string).trim();
+  const menuCategoryId = (formData.get("menuCategoryId") as string).trim();
+  const ingredientsRaw = (formData.get("ingredients") as string).trim();
+  const badge = (formData.get("badge") as string).trim() || null;
+
+  if (!name || !description || isNaN(price) || !imageUrl || !menuCategoryId) {
+    return { error: "Preencha todos os campos obrigatórios" };
+  }
+
+  const ingredients = ingredientsRaw
+    ? ingredientsRaw.split("\n").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  await db.product.update({
+    where: { id: productId },
+    data: { name, description, price, imageUrl, menuCategoryId, ingredients, badge: badge || null },
+  });
+
+  revalidatePath(`/admin/restaurants/${restaurantId}`);
+  redirect(`/admin/restaurants/${restaurantId}`);
+};
+
 export const toggleProductAvailability = async (
   productId: string,
   restaurantId: string,

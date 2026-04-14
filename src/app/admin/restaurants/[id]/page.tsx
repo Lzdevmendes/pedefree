@@ -232,6 +232,9 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
                         </p>
                       </div>
                       <div className="flex gap-3">
+                        <Link href={`/admin/restaurants/${id}/products/${product.id}/edit`} className="text-xs text-green-600 hover:text-green-800">
+                          Editar
+                        </Link>
                         <form
                           action={async () => {
                             "use server";
