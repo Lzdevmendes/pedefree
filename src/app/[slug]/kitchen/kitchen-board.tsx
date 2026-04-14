@@ -121,8 +121,21 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, hasActiveOrders ? 15_000 : 30_000);
-    return () => clearInterval(interval);
+    let interval = setInterval(fetchOrders, hasActiveOrders ? 15_000 : 30_000);
+
+    const handleVisibility = () => {
+      clearInterval(interval);
+      if (document.visibilityState === "visible") {
+        fetchOrders();
+        interval = setInterval(fetchOrders, hasActiveOrders ? 15_000 : 30_000);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [fetchOrders, hasActiveOrders]);
 
   useEffect(() => {
