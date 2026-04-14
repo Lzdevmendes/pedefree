@@ -26,7 +26,7 @@ const OrderConfirmationPage = async ({
   const order = await db.order.findUnique({
     where: { id: orderIdNum },
     include: {
-      restaurant: true,
+      restaurant: { select: { name: true, slug: true } },
       orderProducts: { include: { product: true } },
       rating: { select: { id: true } },
     },
