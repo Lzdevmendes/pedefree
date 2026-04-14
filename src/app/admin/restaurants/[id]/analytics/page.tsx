@@ -103,7 +103,7 @@ const AnalyticsPage = async ({ params }: PageProps) => {
       </div>
 
       {/* STATS CARDS */}
-      <div className="mb-8 grid grid-cols-3 gap-4">
+      <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <p className="text-xs text-muted-foreground">Hoje</p>
           <p className="text-2xl font-bold">{formatCurrency(sumTotal(ordersToday))}</p>
@@ -155,20 +155,20 @@ const AnalyticsPage = async ({ params }: PageProps) => {
         ) : (
           <ul className="divide-y">
             {recentOrders.map((o) => (
-              <li key={o.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium">
+              <li key={o.id} className="flex items-center justify-between py-3 gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-medium truncate">
                     #{o.id}{" "}
                     {o.customerName ? `— ${o.customerName}` : ""}
                     {o.tableNumber ? ` (Mesa ${o.tableNumber})` : ""}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground truncate">
                     {o.consumptionMethod === "DINE_IN" ? "Mesa" : "Retirada"} ·{" "}
                     {new Date(o.createdAt).toLocaleString("pt-BR")}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold">{formatCurrency(o.total)}</p>
+                <div className="text-right shrink-0">
+                  <p className="text-xs sm:text-sm font-semibold">{formatCurrency(o.total)}</p>
                   <p className={`text-xs font-medium ${STATUS_COLOR[o.status] ?? ""}`}>
                     {STATUS_LABEL[o.status] ?? o.status}
                   </p>

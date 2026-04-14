@@ -13,14 +13,14 @@ const AdminPage = async () => {
 
   return (
     <div className="mx-auto max-w-4xl p-8">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Painel Admin</h1>
           <p className="text-sm text-muted-foreground">
             Gerencie restaurantes, cardápios e produtos
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm">
             <Link href="/admin/restaurants/new">+ Novo restaurante</Link>
           </Button>
@@ -44,15 +44,15 @@ const AdminPage = async () => {
           {restaurants.map((r) => (
             <div
               key={r.id}
-              className="flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm"
+              className="flex flex-wrap items-center gap-4 rounded-xl border bg-white p-4 shadow-sm"
             >
-              <div className="flex-1">
-                <p className="font-semibold">{r.name}</p>
-                <p className="text-sm text-muted-foreground">
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">{r.name}</p>
+                <p className="text-sm text-muted-foreground truncate">
                   /{r.slug} · {r._count.products} produtos · {r._count.orders} pedidos
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/admin/restaurants/${r.id}`}>Gerenciar</Link>
                 </Button>

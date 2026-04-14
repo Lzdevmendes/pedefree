@@ -72,7 +72,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
             <h1 className="text-2xl font-bold">{restaurant.name}</h1>
             <p className="text-sm text-muted-foreground">/{restaurant.slug}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" size="sm">
               <Link href={`/admin/restaurants/${id}/edit`}>Editar restaurante</Link>
             </Button>
@@ -103,7 +103,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
       <section className="mb-6 rounded-xl border bg-white p-5 shadow-sm">
         <h2 className="mb-3 font-semibold">Novo produto</h2>
         <form action={createProductForRestaurant} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs font-medium">Nome *</label>
               <input
@@ -124,7 +124,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs font-medium">Categoria *</label>
               <select
@@ -280,7 +280,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
         <h2 className="mb-4 font-semibold">Cupons de desconto</h2>
 
         <form action={createCouponForRestaurant} className="mb-5 space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="mb-1 block text-xs font-medium">Código *</label>
               <input
@@ -379,11 +379,12 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
       <section className="mb-6 rounded-xl border bg-white p-5 shadow-sm">
         <h2 className="mb-4 font-semibold">Horários de funcionamento</h2>
         <form action={upsertHoursForRestaurant} className="space-y-3">
+          <div className="overflow-x-auto">
           {DAY_NAMES.map((day, idx) => {
             const hours = hoursMap[idx];
             return (
-              <div key={idx} className="flex items-center gap-3">
-                <span className="w-20 text-sm font-medium">{day}</span>
+              <div key={idx} className="flex items-center gap-3 min-w-[360px]">
+                <span className="w-20 shrink-0 text-sm font-medium">{day}</span>
                 <input
                   type="time"
                   name={`open_${idx}`}
@@ -409,6 +410,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
               </div>
             );
           })}
+          </div>
           <Button type="submit" size="sm" className="mt-2 w-full rounded-full">
             Salvar horários
           </Button>
