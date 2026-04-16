@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 const SECRET =
   process.env.NEXTAUTH_SECRET ?? "changeme-set-NEXTAUTH_SECRET-in-env";
 
-/** Converts a hex string to Uint8Array */
-function hexToBytes(hex: string): Uint8Array {
+/** Converts a hex string to ArrayBuffer */
+function hexToBytes(hex: string): ArrayBuffer {
   const pairs = hex.match(/.{1,2}/g) ?? [];
-  return new Uint8Array(pairs.map((b) => parseInt(b, 16)));
+  return new Uint8Array(pairs.map((b) => parseInt(b, 16))).buffer as ArrayBuffer;
 }
 
 /** Verifies an HMAC-SHA256 token using the Web Crypto API (Edge Runtime compatible) */
