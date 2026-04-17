@@ -22,5 +22,9 @@ export async function GET(
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  return NextResponse.json(order);
+  return NextResponse.json(order, {
+    headers: {
+      "Cache-Control": "private, no-store",
+    },
+  });
 }
