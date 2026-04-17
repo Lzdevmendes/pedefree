@@ -2,7 +2,7 @@
 
 import { Product } from "@prisma/client";
 import Image from "next/image";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import { formatCurrency } from "@/lib/utils";
 
@@ -18,7 +18,7 @@ const BADGE_CONFIG: Record<string, { label: string; className: string }> = {
   PROMOCAO: { label: "Promoção", className: "bg-red-500 text-white" },
 };
 
-const Products = ({ products }: ProductsProps) => {
+const Products = memo(function Products({ products }: ProductsProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   return (
@@ -76,6 +76,6 @@ const Products = ({ products }: ProductsProps) => {
       )}
     </>
   );
-};
+});
 
 export default Products;

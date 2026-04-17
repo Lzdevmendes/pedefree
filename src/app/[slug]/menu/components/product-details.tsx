@@ -3,7 +3,7 @@
 import { Product } from "@prisma/client";
 import { ChefHatIcon, MinusIcon, PlusIcon } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,11 +21,11 @@ interface ProductDetailsProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const ProductDetails = ({
+const ProductDetails = memo(function ProductDetails({
   product,
   open,
   onOpenChange,
-}: ProductDetailsProps) => {
+}: ProductDetailsProps) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
@@ -130,6 +130,6 @@ const ProductDetails = ({
       </SheetContent>
     </Sheet>
   );
-};
+});
 
 export default ProductDetails;
