@@ -3,7 +3,7 @@
 import { OpeningHours, Prisma } from "@prisma/client";
 import { ClockIcon, SearchIcon, StarIcon, XIcon } from "lucide-react";
 import Image from "next/image";
-import { useDeferredValue, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,18 +69,29 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
   const [searchQuery, setSearchQuery] = useState("");
   const deferredQuery = useDeferredValue(searchQuery);
 
-  const { isOpen, label } = getOpenStatus(openingHours);
+  const { isOpen, label } = useMemo(() => getOpenStatus(openingHours), [openingHours]);
 
-  const allProducts = restaurant.menuCategories.flatMap((c) => c.products);
-  const featuredProducts = allProducts.filter((p) => p.badge);
+  const allProducts = useMemo(
+    () => restaurant.menuCategories.flatMap((c) => c.products),
+    [restaurant.menuCategories],
+  );
 
-  const filteredProducts = deferredQuery.trim()
-    ? allProducts.filter(
-        (p) =>
-          p.name.toLowerCase().includes(deferredQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(deferredQuery.toLowerCase()),
-      )
-    : null;
+  const featuredProducts = useMemo(
+    () => allProducts.filter((p) => p.badge),
+    [allProducts],
+  );
+
+  const filteredProducts = useMemo(
+    () =>
+      deferredQuery.trim()
+        ? allProducts.filter(
+            (p) =>
+              p.name.toLowerCase().includes(deferredQuery.toLowerCase()) ||
+              p.description.toLowerCase().includes(deferredQuery.toLowerCase()),
+          )
+        : null,
+    [deferredQuery, allProducts],
+  );
 
   const handleCategoryClick = (category: MenuCategoriesWithProducts) => {
     setSelectedCategory(category);
