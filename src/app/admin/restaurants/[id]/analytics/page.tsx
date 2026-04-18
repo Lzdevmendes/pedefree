@@ -17,8 +17,8 @@ const AnalyticsPage = async ({ params }: PageProps) => {
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOf7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const startOf30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const startOf7Days = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  const startOf30Days = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
 
   const [statsToday, stats7d, stats30d, topProducts, recentOrders] = await Promise.all([
     db.order.aggregate({
