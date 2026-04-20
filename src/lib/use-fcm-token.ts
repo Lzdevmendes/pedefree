@@ -1,19 +1,26 @@
 "use client";
 
 import { getToken } from "firebase/messaging";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { getFirebaseMessaging } from "./firebase";
 
 const FCM_TOKEN_KEY = "pedefree_fcm_token";
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
-export function useFcmToken() {
+export function useFcmToken(): string | null {
   const [token, setToken] = useState<string | null>(null);
+  const requestedRef = useRef(false);
 
   useEffect(() => {
+    if (requestedRef.current) return;
+    requestedRef.current = true;
+
     const cached = sessionStorage.getItem(FCM_TOKEN_KEY);
-    if (cached) { setToken(cached); return; }
+    if (cached) {
+      setToken(cached);
+      return;
+    }
 
     const request = async () => {
       try {
@@ -31,7 +38,7 @@ export function useFcmToken() {
           setToken(fcmToken);
         }
       } catch {
-        // notificações não disponíveis (Safari sem permissão, etc.)
+        // notificações não disponíveis
       }
     };
 
@@ -40,3 +47,4 @@ export function useFcmToken() {
 
   return token;
 }
+
