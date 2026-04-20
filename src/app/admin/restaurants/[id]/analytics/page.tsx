@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
+import { getStartOfToday, getDateRange, ORDER_STATUS_CONFIG } from "@/lib/order-helpers";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -15,10 +16,9 @@ const AnalyticsPage = async ({ params }: PageProps) => {
   const restaurant = await db.restaurant.findUnique({ where: { id }, select: { name: true } });
   if (!restaurant) return notFound();
 
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOf7Days = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-  const startOf30Days = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+  const startOfToday = getStartOfToday();
+  const startOf7Days = getDateRange(7);
+  const startOf30Days = getDateRange(30);
 
   const [statsToday, stats7d, stats30d, topProducts, recentOrders] = await Promise.all([
     db.order.aggregate({
@@ -64,19 +64,7 @@ const AnalyticsPage = async ({ params }: PageProps) => {
     }),
   ]);
 
-  const STATUS_LABEL: Record<string, string> = {
-    PENDING: "Aguardando",
-    IN_PREPARATION: "Em preparo",
-    FINISHED: "Pronto",
-    CANCELLED: "Cancelado",
-  };
-
-  const STATUS_COLOR: Record<string, string> = {
-    PENDING: "text-yellow-600",
-    IN_PREPARATION: "text-blue-600",
-    FINISHED: "text-green-600",
-    CANCELLED: "text-red-500",
-  };
+  const getOrderStatusLabel = (status: string) => ORDER_STATUS_CONFIG[status as keyof typeof ORDER_STATUS_CONFIG] || { label: status, color: "" };
 
   return (
     <div className="mx-auto max-w-3xl p-8">
@@ -145,27 +133,30 @@ const AnalyticsPage = async ({ params }: PageProps) => {
           <p className="text-sm text-muted-foreground">Nenhum pedido ainda.</p>
         ) : (
           <ul className="divide-y">
-            {recentOrders.map((o) => (
-              <li key={o.id} className="flex items-center justify-between py-3 gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium truncate">
-                    #{o.id}{" "}
-                    {o.customerName ? `— ${o.customerName}` : ""}
-                    {o.tableNumber ? ` (Mesa ${o.tableNumber})` : ""}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {o.consumptionMethod === "DINE_IN" ? "Mesa" : "Retirada"} ·{" "}
-                    {new Date(o.createdAt).toLocaleString("pt-BR")}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-xs sm:text-sm font-semibold">{formatCurrency(o.total)}</p>
-                  <p className={`text-xs font-medium ${STATUS_COLOR[o.status] ?? ""}`}>
-                    {STATUS_LABEL[o.status] ?? o.status}
-                  </p>
-                </div>
-              </li>
-            ))}
+            {recentOrders.map((o) => {
+              const statusConfig = getOrderStatusLabel(o.status);
+              return (
+                <li key={o.id} className="flex items-center justify-between py-3 gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-medium truncate">
+                      #{o.id}{" "}
+                      {o.customerName ? `— ${o.customerName}` : ""}
+                      {o.tableNumber ? ` (Mesa ${o.tableNumber})` : ""}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {o.consumptionMethod === "DINE_IN" ? "Mesa" : "Retirada"} ·{" "}
+                      {new Date(o.createdAt).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs sm:text-sm font-semibold">{formatCurrency(o.total)}</p>
+                    <p className={`text-xs font-medium ${statusConfig.color}`}>
+                      {statusConfig.label}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -174,3 +165,4 @@ const AnalyticsPage = async ({ params }: PageProps) => {
 };
 
 export default AnalyticsPage;
+
