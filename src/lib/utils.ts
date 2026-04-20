@@ -10,4 +10,5 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-export const formatCurrency = (value: number) => currencyFormatter.format(value);
+export const formatCurrency = (value: number): string => currencyFormatter.format(value);
+
