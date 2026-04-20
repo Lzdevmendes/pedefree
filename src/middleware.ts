@@ -6,25 +6,16 @@ const SECRET =
 const ADMIN_MAX_AGE_MS = 8 * 60 * 60 * 1000;
 const KITCHEN_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
-/** Converts a hex string to ArrayBuffer */
 function hexToBytes(hex: string): ArrayBuffer {
   const pairs = hex.match(/.{1,2}/g) ?? [];
   return new Uint8Array(pairs.map((b) => parseInt(b, 16))).buffer as ArrayBuffer;
 }
 
-/** Verifies an HMAC-SHA256 token using the Web Crypto API (Edge Runtime compatible) */
-async function verifyToken(token: string, maxAgeMs: number): Promise<boolean> {
+async function verifyTokenSignature(
+  payload: string,
+  sig: string,
+): Promise<boolean> {
   try {
-    const decoded = atob(token);
-    const parts = decoded.split(":");
-    if (parts.length < 4) return false;
-
-    const sig = parts.pop()!;
-    const payload = parts.join(":");
-
-    const timestamp = Number(parts[2]);
-    if (isNaN(timestamp) || Date.now() - timestamp > maxAgeMs) return false;
-
     const encoder = new TextEncoder();
     const key = await globalThis.crypto.subtle.importKey(
       "raw",
@@ -45,7 +36,24 @@ async function verifyToken(token: string, maxAgeMs: number): Promise<boolean> {
   }
 }
 
-/** Returns the slug encoded in the kitchen token, or null if invalid */
+async function verifyToken(token: string, maxAgeMs: number): Promise<boolean> {
+  try {
+    const decoded = atob(token);
+    const parts = decoded.split(":");
+    if (parts.length < 4) return false;
+
+    const sig = parts.pop()!;
+    const payload = parts.join(":");
+
+    const timestamp = Number(parts[2]);
+    if (isNaN(timestamp) || Date.now() - timestamp > maxAgeMs) return false;
+
+    return verifyTokenSignature(payload, sig);
+  } catch {
+    return false;
+  }
+}
+
 async function verifyKitchenToken(
   token: string,
   slug: string,
@@ -55,7 +63,7 @@ async function verifyKitchenToken(
     const parts = decoded.split(":");
     if (parts.length < 4) return false;
 
-    const tokenSlug = parts[1]; // kitchen:{slug}:{timestamp}:{sig}
+    const tokenSlug = parts[1];
     if (tokenSlug !== slug) return false;
 
     return verifyToken(token, KITCHEN_MAX_AGE_MS);
@@ -67,7 +75,6 @@ async function verifyKitchenToken(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // proteção do painel admin
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const session = request.cookies.get("admin_session");
     if (!session?.value || !(await verifyToken(session.value, ADMIN_MAX_AGE_MS))) {
@@ -75,7 +82,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // proteção da cozinha (slug extraído da URL)
   const kitchenMatch = pathname.match(/^\/([^/]+)\/kitchen/);
   if (kitchenMatch) {
     const slug = kitchenMatch[1];
