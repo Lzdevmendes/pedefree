@@ -8,7 +8,7 @@ import {
   WifiOffIcon,
   XCircleIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Step {
   status: OrderStatus;
@@ -35,57 +35,59 @@ interface OrderStatusPollerProps {
 
 const BASE_INTERVAL = 10_000;
 const MAX_FAILURES = 3;
+const MAX_BACKOFF = 60_000;
 
 const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) => {
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const [connectionError, setConnectionError] = useState(false);
   const failureCount = useRef(0);
-  const retryTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const poll = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/orders/${orderId}`, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        failureCount.current = 0;
-        setConnectionError(false);
-        setStatus(data.status);
-      } else {
-        failureCount.current += 1;
-        if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
-      }
-    } catch {
-      failureCount.current += 1;
-      if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
-    }
-  }, [orderId]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (status === "FINISHED" || status === "CANCELLED") return;
 
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          failureCount.current = 0;
+          setConnectionError(false);
+          setStatus(data.status);
+        } else {
+          failureCount.current += 1;
+          if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
+        }
+      } catch {
+        failureCount.current += 1;
+        if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
+      }
+    };
+
     const getInterval = () =>
       failureCount.current > 0
-        ? Math.min(BASE_INTERVAL * 2 ** failureCount.current, 60_000)
+        ? Math.min(BASE_INTERVAL * (1 << failureCount.current), MAX_BACKOFF)
         : BASE_INTERVAL;
 
-    let interval = setInterval(poll, getInterval());
+    let currentInterval = getInterval();
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(poll, currentInterval);
 
     const handleVisibility = () => {
-      clearInterval(interval);
-      if (retryTimeout.current) clearTimeout(retryTimeout.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
       if (document.visibilityState === "visible") {
         poll();
-        interval = setInterval(poll, getInterval());
+        currentInterval = getInterval();
+        intervalRef.current = setInterval(poll, currentInterval);
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
-      clearInterval(interval);
-      if (retryTimeout.current) clearTimeout(retryTimeout.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [poll, status]);
+  }, [orderId, status]);
 
   if (status === "CANCELLED") {
     return (
@@ -161,3 +163,4 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
 };
 
 export default OrderStatusPoller;
+
