@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getBoolean, getDate, getFloat, getNumber, getString, getStringArray } from "@/lib/form-parsing";
 import { db } from "@/lib/prisma";
 import { signAdminSession } from "@/lib/session";
 
@@ -14,8 +15,8 @@ export const adminLogin = async (
   _prev: { error?: string; success?: boolean },
   formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> => {
-  const email = (formData.get("email") as string).trim().toLowerCase();
-  const password = formData.get("password") as string;
+  const email = getString(formData, "email", { trim: true, lowercase: true });
+  const password = getString(formData, "password", { trim: true });
 
   const expectedEmail = (process.env.ADMIN_EMAIL ?? "").toLowerCase();
   const expectedHash = process.env.ADMIN_PASSWORD_HASH ?? "";
@@ -26,7 +27,6 @@ export const adminLogin = async (
     valid =
       email === expectedEmail && (await bcrypt.compare(password, expectedHash));
   } else {
-    // fallback para ADMIN_PASSWORD em texto plano (desenvolvimento)
     valid =
       email === expectedEmail &&
       password === (process.env.ADMIN_PASSWORD ?? "");
@@ -39,7 +39,7 @@ export const adminLogin = async (
   jar.set("admin_session", token, {
     httpOnly: true,
     sameSite: "strict",
-    maxAge: 60 * 60 * 8, // 8h
+    maxAge: 60 * 60 * 8,
     path: "/",
   });
 
@@ -58,17 +58,14 @@ export const createRestaurant = async (
   _prev: { error?: string },
   formData: FormData,
 ): Promise<{ error?: string }> => {
-  const name = (formData.get("name") as string).trim();
-  const slug = (formData.get("slug") as string).trim().toLowerCase();
-  const description = (formData.get("description") as string).trim();
-  const avatarImageUrl = (formData.get("avatarImageUrl") as string).trim();
-  const coverImageUrl = (formData.get("coverImageUrl") as string).trim();
-  const primaryColor =
-    (formData.get("primaryColor") as string).trim() || "42 100% 50%";
-  const tableCount = parseInt(formData.get("tableCount") as string) || 20;
-  const kitchenPasswordRaw = (
-    formData.get("kitchenPassword") as string
-  ).trim();
+  const name = getString(formData, "name", { trim: true });
+  const slug = getString(formData, "slug", { trim: true, lowercase: true });
+  const description = getString(formData, "description", { trim: true });
+  const avatarImageUrl = getString(formData, "avatarImageUrl", { trim: true });
+  const coverImageUrl = getString(formData, "coverImageUrl", { trim: true });
+  const primaryColor = getString(formData, "primaryColor", { trim: true }) || "42 100% 50%";
+  const tableCount = getNumber(formData, "tableCount", 20);
+  const kitchenPasswordRaw = getString(formData, "kitchenPassword", { trim: true });
 
   if (!name || !slug || !description || !avatarImageUrl || !coverImageUrl) {
     return { error: "Preencha todos os campos obrigatórios" };
@@ -100,17 +97,14 @@ export const updateRestaurant = async (
   _prev: { error?: string },
   formData: FormData,
 ): Promise<{ error?: string }> => {
-  const name = (formData.get("name") as string).trim();
-  const slug = (formData.get("slug") as string).trim().toLowerCase();
-  const description = (formData.get("description") as string).trim();
-  const avatarImageUrl = (formData.get("avatarImageUrl") as string).trim();
-  const coverImageUrl = (formData.get("coverImageUrl") as string).trim();
-  const primaryColor =
-    (formData.get("primaryColor") as string).trim() || "42 100% 50%";
-  const tableCount = parseInt(formData.get("tableCount") as string) || 20;
-  const kitchenPasswordRaw = (
-    formData.get("kitchenPassword") as string
-  ).trim();
+  const name = getString(formData, "name", { trim: true });
+  const slug = getString(formData, "slug", { trim: true, lowercase: true });
+  const description = getString(formData, "description", { trim: true });
+  const avatarImageUrl = getString(formData, "avatarImageUrl", { trim: true });
+  const coverImageUrl = getString(formData, "coverImageUrl", { trim: true });
+  const primaryColor = getString(formData, "primaryColor", { trim: true }) || "42 100% 50%";
+  const tableCount = getNumber(formData, "tableCount", 20);
+  const kitchenPasswordRaw = getString(formData, "kitchenPassword", { trim: true });
 
   if (!name || !slug || !description || !avatarImageUrl || !coverImageUrl) {
     return { error: "Preencha todos os campos obrigatórios" };
@@ -176,24 +170,17 @@ export const createProduct = async (
   _prev: { error?: string },
   formData: FormData,
 ): Promise<{ error?: string }> => {
-  const name = (formData.get("name") as string).trim();
-  const description = (formData.get("description") as string).trim();
-  const price = parseFloat(formData.get("price") as string);
-  const imageUrl = (formData.get("imageUrl") as string).trim();
-  const menuCategoryId = (formData.get("menuCategoryId") as string).trim();
-  const ingredientsRaw = (formData.get("ingredients") as string).trim();
-  const badge = (formData.get("badge") as string).trim() || null;
+  const name = getString(formData, "name", { trim: true });
+  const description = getString(formData, "description", { trim: true });
+  const price = getFloat(formData, "price");
+  const imageUrl = getString(formData, "imageUrl", { trim: true });
+  const menuCategoryId = getString(formData, "menuCategoryId", { trim: true });
+  const ingredients = getStringArray(formData, "ingredients");
+  const badge = getString(formData, "badge", { trim: true }) || null;
 
-  if (!name || !description || isNaN(price) || !imageUrl || !menuCategoryId) {
+  if (!name || !description || price === 0 || !imageUrl || !menuCategoryId) {
     return { error: "Preencha todos os campos obrigatórios" };
   }
-
-  const ingredients = ingredientsRaw
-    ? ingredientsRaw
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : [];
 
   await db.product.create({
     data: {
@@ -218,21 +205,17 @@ export const updateProduct = async (
   _prev: { error?: string },
   formData: FormData,
 ): Promise<{ error?: string }> => {
-  const name = (formData.get("name") as string).trim();
-  const description = (formData.get("description") as string).trim();
-  const price = parseFloat(formData.get("price") as string);
-  const imageUrl = (formData.get("imageUrl") as string).trim();
-  const menuCategoryId = (formData.get("menuCategoryId") as string).trim();
-  const ingredientsRaw = (formData.get("ingredients") as string).trim();
-  const badge = (formData.get("badge") as string).trim() || null;
+  const name = getString(formData, "name", { trim: true });
+  const description = getString(formData, "description", { trim: true });
+  const price = getFloat(formData, "price");
+  const imageUrl = getString(formData, "imageUrl", { trim: true });
+  const menuCategoryId = getString(formData, "menuCategoryId", { trim: true });
+  const ingredients = getStringArray(formData, "ingredients");
+  const badge = getString(formData, "badge", { trim: true }) || null;
 
-  if (!name || !description || isNaN(price) || !imageUrl || !menuCategoryId) {
+  if (!name || !description || price === 0 || !imageUrl || !menuCategoryId) {
     return { error: "Preencha todos os campos obrigatórios" };
   }
-
-  const ingredients = ingredientsRaw
-    ? ingredientsRaw.split("\n").map((s) => s.trim()).filter(Boolean)
-    : [];
 
   await db.product.update({
     where: { id: productId },
@@ -263,12 +246,12 @@ export const createCoupon = async (
   _prev: { error?: string },
   formData: FormData,
 ): Promise<{ error?: string }> => {
-  const code = (formData.get("code") as string).trim().toUpperCase();
-  const discountPercent = parseInt(formData.get("discountPercent") as string);
-  const maxUses = parseInt(formData.get("maxUses") as string) || 100;
-  const expiresAtRaw = formData.get("expiresAt") as string;
+  const code = getString(formData, "code", { trim: true }).toUpperCase();
+  const discountPercent = getNumber(formData, "discountPercent");
+  const maxUses = getNumber(formData, "maxUses", 100);
+  const expiresAt = getDate(formData, "expiresAt");
 
-  if (!code || isNaN(discountPercent) || discountPercent < 1 || discountPercent > 100) {
+  if (!code || discountPercent < 1 || discountPercent > 100) {
     return { error: "Código e desconto (1-100%) são obrigatórios" };
   }
 
@@ -281,7 +264,7 @@ export const createCoupon = async (
       discountPercent,
       maxUses,
       restaurantId,
-      expiresAt: expiresAtRaw ? new Date(expiresAtRaw) : undefined,
+      expiresAt,
     },
   });
 
@@ -308,9 +291,9 @@ export const upsertOpeningHours = async (
 ): Promise<{ error?: string }> => {
   await Promise.all(
     [0, 1, 2, 3, 4, 5, 6].map((day) => {
-      const isClosed = formData.get(`closed_${day}`) === "on";
-      const openTime = (formData.get(`open_${day}`) as string) || "08:00";
-      const closeTime = (formData.get(`close_${day}`) as string) || "22:00";
+      const isClosed = getBoolean(formData, `closed_${day}`);
+      const openTime = getString(formData, `open_${day}`, { trim: true }) || "08:00";
+      const closeTime = getString(formData, `close_${day}`, { trim: true }) || "22:00";
       return db.openingHours.upsert({
         where: { restaurantId_dayOfWeek: { restaurantId, dayOfWeek: day } },
         create: { restaurantId, dayOfWeek: day, openTime, closeTime, isClosed },
