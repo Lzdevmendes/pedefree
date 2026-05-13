@@ -3,7 +3,7 @@
 import { OpeningHours, Prisma } from "@prisma/client";
 import { ClockIcon, SearchIcon, StarIcon, XIcon } from "lucide-react";
 import Image from "next/image";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useEffect, useDeferredValue, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,10 @@ type MenuCategoriesWithProducts = Prisma.MenuCategoryGetPayload<{
   include: { products: true };
 }>;
 
-function getOpenStatus(openingHours: OpeningHours[] | undefined): {
+function getOpenStatus(
+  openingHours: OpeningHours[] | undefined,
+  now = new Date(),
+): {
   isOpen: boolean;
   label: string;
 } {
@@ -34,8 +37,7 @@ function getOpenStatus(openingHours: OpeningHours[] | undefined): {
     return { isOpen: true, label: "Aberto!" };
   }
 
-  const now = new Date();
-  const day = now.getDay(); // 0 = domingo, 6 = sábado
+  const day = now.getDay();
   const hours = now.getHours().toString().padStart(2, "0");
   const minutes = now.getMinutes().toString().padStart(2, "0");
   const currentTime = `${hours}:${minutes}`;
@@ -68,8 +70,25 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
     useState<MenuCategoriesWithProducts>(restaurant.menuCategories[0]);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredQuery = useDeferredValue(searchQuery);
+  const [now, setNow] = useState(() => new Date());
 
-  const { isOpen, label } = useMemo(() => getOpenStatus(openingHours), [openingHours]);
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const msUntilNextMinute =
+      (60 - new Date().getSeconds()) * 1000 - new Date().getMilliseconds();
+
+    const timeoutId = setTimeout(() => {
+      setNow(new Date());
+      intervalId = setInterval(() => setNow(new Date()), 60_000);
+    }, msUntilNextMinute);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, []);
+
+  const { isOpen, label } = useMemo(() => getOpenStatus(openingHours, now), [openingHours, now]);
 
   const allProducts = useMemo(
     () => restaurant.menuCategories.flatMap((c) => c.products),
