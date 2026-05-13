@@ -349,9 +349,9 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
           >
             <ListIcon size={14} />
             Pedidos
-            {pending.length + (orders.filter((o) => o.status === "IN_PREPARATION").length) > 0 && (
+            {pending.length + inPrep.length > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {pending.length + orders.filter((o) => o.status === "IN_PREPARATION").length}
+                {pending.length + inPrep.length}
               </span>
             )}
           </button>
