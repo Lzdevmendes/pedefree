@@ -229,8 +229,19 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
   }, [slug]);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 60_000);
-    return () => clearInterval(interval);
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const msUntilNextMinute =
+      (60 - new Date().getSeconds()) * 1000 - new Date().getMilliseconds();
+
+    const timeoutId = setTimeout(() => {
+      setTick((t) => t + 1);
+      intervalId = setInterval(() => setTick((t) => t + 1), 60_000);
+    }, msUntilNextMinute);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   const handleAdvanceStatus = useCallback(async (order: Order) => {
