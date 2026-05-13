@@ -2,24 +2,40 @@
 
 import { OrderStatus } from "@prisma/client";
 import {
-    CheckCircleIcon,
-    ChefHatIcon,
-    ClockIcon,
-    WifiOffIcon,
-    XCircleIcon,
+  CheckCircleIcon,
+  ChefHatIcon,
+  ClockIcon,
+  WifiOffIcon,
+  XCircleIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface Step {
   status: OrderStatus;
   label: string;
+  sublabel: string;
   icon: React.ReactNode;
 }
 
 const STEPS: Step[] = [
-  { status: "PENDING", label: "Pedido recebido", icon: <ClockIcon size={18} /> },
-  { status: "IN_PREPARATION", label: "Em preparo", icon: <ChefHatIcon size={18} /> },
-  { status: "FINISHED", label: "Pronto!", icon: <CheckCircleIcon size={18} /> },
+  {
+    status: "PENDING",
+    label: "Recebido",
+    sublabel: "Pedido enviado ao restaurante",
+    icon: <ClockIcon size={16} />,
+  },
+  {
+    status: "IN_PREPARATION",
+    label: "Em preparo",
+    sublabel: "Sua comida está sendo preparada",
+    icon: <ChefHatIcon size={16} />,
+  },
+  {
+    status: "FINISHED",
+    label: "Pronto!",
+    sublabel: "Pode retirar seu pedido",
+    icon: <CheckCircleIcon size={16} />,
+  },
 ];
 
 const STATUS_ORDER: Partial<Record<OrderStatus, number>> = {
@@ -95,12 +111,12 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
 
   if (status === "CANCELLED") {
     return (
-      <div className="flex flex-col items-center gap-3 py-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-          <XCircleIcon className="text-red-500" size={24} />
+      <div className="flex flex-col items-center gap-3 py-4 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+          <XCircleIcon className="text-red-500" size={26} />
         </div>
         <p className="font-semibold text-red-600">Pedido cancelado</p>
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Entre em contato com o estabelecimento caso precise de ajuda.
         </p>
       </div>
@@ -111,56 +127,67 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
 
   return (
     <div className="w-full" aria-live="polite" aria-atomic="true">
-      <div className="relative flex justify-between">
-        <div className="absolute left-0 right-0 top-[18px] h-0.5 bg-gray-200">
-          <div
-            className="h-full bg-primary transition-all duration-700"
-            style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }}
-          />
-        </div>
-
+      {/* Steps verticais */}
+      <div className="space-y-0">
         {STEPS.map((step, idx) => {
           const done = idx <= currentStep;
+          const isLast = idx === STEPS.length - 1;
           return (
-            <div key={step.status} className="relative flex flex-col items-center gap-2">
-              <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors duration-500 ${
-                  done
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-gray-300 bg-white text-gray-400"
-                }`}
-              >
-                {step.icon}
+            <div key={step.status} className="flex gap-3">
+              {/* Ícone + linha */}
+              <div className="flex flex-col items-center">
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-500 ${
+                    done
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                      : "border-border bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {step.icon}
+                </div>
+                {!isLast && (
+                  <div
+                    className={`mt-1 h-8 w-0.5 transition-colors duration-700 ${
+                      idx < currentStep ? "bg-primary" : "bg-border"
+                    }`}
+                  />
+                )}
               </div>
-              <span
-                className={`text-center text-xs font-medium ${
-                  done ? "text-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {step.label}
-              </span>
+
+              {/* Texto */}
+              <div className={`pb-${isLast ? 0 : 4} pt-1.5`}>
+                <p
+                  className={`text-sm font-semibold leading-none ${
+                    done ? "text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  {step.label}
+                  {idx === currentStep && status !== "FINISHED" && (
+                    <span className="ml-2 inline-block h-2 w-2 animate-pulse rounded-full bg-primary align-middle" />
+                  )}
+                </p>
+                <p className={`mt-1 text-xs ${done ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
+                  {step.sublabel}
+                </p>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {status === "FINISHED" && (
-        <p className="mt-6 text-center text-sm font-semibold text-green-600">
-          Seu pedido está pronto! Pode retirar.
-        </p>
-      )}
-
-      {status !== "FINISHED" && !connectionError && (
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Atualiza automaticamente a cada 10 segundos
-        </p>
-      )}
-
+      {/* Mensagem de erro de conexão */}
       {connectionError && (
-        <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-orange-50 px-3 py-2 text-orange-700">
+        <div className="mt-4 flex items-center gap-2 rounded-xl bg-orange-50 px-4 py-3 text-orange-700">
           <WifiOffIcon size={14} />
           <p className="text-xs">Sem conexão — tentando reconectar...</p>
         </div>
+      )}
+
+      {/* Atualização automática */}
+      {status !== "FINISHED" && !connectionError && (
+        <p className="mt-4 text-center text-xs text-muted-foreground/60">
+          Atualiza automaticamente
+        </p>
       )}
     </div>
   );
