@@ -4,6 +4,7 @@ import { StarIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 import { submitRating } from "../actions";
 
@@ -73,12 +74,12 @@ const RatingForm = ({ orderId }: RatingFormProps) => {
         ))}
       </div>
 
-      <textarea
+      <Textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         placeholder="Comentário (opcional)"
         rows={2}
-        className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+        className="min-h-0 rounded-lg text-sm"
       />
 
       {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
