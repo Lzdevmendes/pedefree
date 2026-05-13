@@ -5,6 +5,7 @@ interface ConsumptionMethodOptionProps {
   imageAlt: string;
   buttonText: string;
   onClick: () => void;
+  priority?: boolean;
 }
 
 const ConsumptionMethodOption = ({
@@ -12,6 +13,7 @@ const ConsumptionMethodOption = ({
   imageUrl,
   buttonText,
   onClick,
+  priority = false,
 }: ConsumptionMethodOptionProps) => {
   return (
     <button
@@ -24,6 +26,7 @@ const ConsumptionMethodOption = ({
             src={imageUrl}
             fill
             alt={imageAlt}
+            priority={priority}
             className="object-contain"
           />
         </div>

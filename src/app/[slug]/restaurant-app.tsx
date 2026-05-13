@@ -99,6 +99,7 @@ export default function RestaurantApp({ restaurant, isPaused }: RestaurantAppPro
           buttonText="Comer aqui"
           imageAlt="Comer aqui"
           imageUrl="/dine_in.png"
+          priority
           onClick={() => {
             setConsumptionMethod("DINE_IN");
             setPage("menu");
@@ -108,6 +109,7 @@ export default function RestaurantApp({ restaurant, isPaused }: RestaurantAppPro
           buttonText="Para levar"
           imageAlt="Para levar"
           imageUrl="/takeaway.png"
+          priority
           onClick={() => {
             setConsumptionMethod("TAKEAWAY");
             setPage("menu");
