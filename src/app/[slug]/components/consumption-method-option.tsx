@@ -18,19 +18,19 @@ const ConsumptionMethodOption = ({
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-xl border bg-card text-card-foreground shadow-sm transition active:scale-95 hover:shadow-md hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group w-full rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:border-primary/50 hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex flex-col items-center gap-5 py-6 px-4">
-        <div className="relative h-[80px] w-[80px]">
+      <div className="flex flex-col items-center gap-4 px-4 py-6">
+        <div className="relative h-[80px] w-[80px] transition-transform duration-200 group-hover:scale-105">
           <Image
             src={imageUrl}
             fill
             alt={imageAlt}
             priority={priority}
-            className="object-contain"
+            className="object-contain drop-shadow-sm"
           />
         </div>
-        <span className="w-full rounded-full bg-secondary py-2 text-center text-sm font-semibold text-secondary-foreground">
+        <span className="w-full rounded-xl bg-primary/10 py-2 text-center text-sm font-semibold text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
           {buttonText}
         </span>
       </div>
