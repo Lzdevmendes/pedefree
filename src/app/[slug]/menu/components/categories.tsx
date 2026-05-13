@@ -129,6 +129,7 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
             alt={restaurant.name}
             height={45}
             width={45}
+            priority
             className="rounded-xl"
           />
           <div>

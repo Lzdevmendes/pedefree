@@ -12,6 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/cart";
 import { formatCurrency } from "@/lib/utils";
 
@@ -111,12 +112,12 @@ const ProductDetails = memo(function ProductDetails({
             <label className="mb-1.5 block text-sm font-medium">
               Observações
             </label>
-            <textarea
-              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm leading-relaxed placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            <Textarea
               rows={2}
               placeholder="Ex: sem cebola, bem passado..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              className="min-h-0 rounded-xl text-sm leading-relaxed"
             />
           </div>
 
