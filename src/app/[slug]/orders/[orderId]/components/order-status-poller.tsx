@@ -41,10 +41,15 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const [connectionError, setConnectionError] = useState(false);
   const failureCount = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (status === "FINISHED" || status === "CANCELLED") return;
+
+    const getDelay = () =>
+      failureCount.current > 0
+        ? Math.min(BASE_INTERVAL * (1 << failureCount.current), MAX_BACKOFF)
+        : BASE_INTERVAL;
 
     const poll = async () => {
       try {
@@ -64,27 +69,26 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
       }
     };
 
-    const getInterval = () =>
-      failureCount.current > 0
-        ? Math.min(BASE_INTERVAL * (1 << failureCount.current), MAX_BACKOFF)
-        : BASE_INTERVAL;
+    const schedule = () => {
+      timeoutRef.current = setTimeout(async () => {
+        await poll();
+        schedule();
+      }, getDelay());
+    };
 
-    let currentInterval = getInterval();
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(poll, currentInterval);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    schedule();
 
     const handleVisibility = () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (document.visibilityState === "visible") {
-        poll();
-        currentInterval = getInterval();
-        intervalRef.current = setInterval(poll, currentInterval);
+        poll().then(schedule);
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [orderId, status]);
@@ -106,7 +110,7 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
   const currentStep = STATUS_ORDER[status] ?? 0;
 
   return (
-    <div className="w-full">
+    <div className="w-full" aria-live="polite" aria-atomic="true">
       <div className="relative flex justify-between">
         <div className="absolute left-0 right-0 top-[18px] h-0.5 bg-gray-200">
           <div
@@ -163,4 +167,3 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
 };
 
 export default OrderStatusPoller;
-
