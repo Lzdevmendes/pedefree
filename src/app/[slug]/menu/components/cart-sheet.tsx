@@ -4,7 +4,7 @@ import { ConsumptionMethod } from "@prisma/client";
 import { CheckCircleIcon, MinusIcon, PlusIcon, TagIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,10 @@ const CartSheet = ({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [tableNumber, setTableNumber] = useState(prefilledTable ?? "");
+
+  useEffect(() => {
+    if (prefilledTable !== null) setTableNumber(prefilledTable);
+  }, [prefilledTable]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [couponCode, setCouponCode] = useState("");
@@ -235,6 +239,9 @@ const CartSheet = ({
                           <Input
                             placeholder="Cupom de desconto"
                             value={couponCode}
+                            autoCapitalize="characters"
+                            autoCorrect="off"
+                            autoComplete="off"
                             onChange={(e) => {
                               setCouponCode(e.target.value);
                               setCouponError("");
