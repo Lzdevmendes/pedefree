@@ -57,7 +57,7 @@ const AdminPage = async () => {
                   <Link href={`/admin/restaurants/${r.id}`}>Gerenciar</Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/${r.slug}/menu?consumptionMethod=DINE_IN`} target="_blank">
+                  <Link href={`/${r.slug}?consumptionMethod=DINE_IN`} target="_blank">
                     Ver menu
                   </Link>
                 </Button>
