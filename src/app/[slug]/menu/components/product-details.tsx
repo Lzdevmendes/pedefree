@@ -42,10 +42,11 @@ const ProductDetails = memo(function ProductDetails({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="max-h-[88vh] overflow-y-auto rounded-t-2xl p-0 pb-safe"
+        className="max-h-[90vh] overflow-y-auto rounded-t-3xl p-0 pb-safe"
       >
-        {/* Imagem menor em telas pequenas */}
-        <div className="relative h-[200px] w-full bg-gray-100 sm:h-[260px]">
+        {/* Imagem com fundo suave */}
+        <div className="relative h-[200px] w-full overflow-hidden bg-muted sm:h-[240px]">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5" />
           <Image
             src={product.imageUrl}
             alt={product.name}
@@ -54,78 +55,89 @@ const ProductDetails = memo(function ProductDetails({
           />
         </div>
 
-        <div className="p-5">
-          <SheetHeader className="mb-2 text-left">
-            <SheetTitle className="text-xl leading-tight">{product.name}</SheetTitle>
+        <div className="p-5 pb-2">
+          <SheetHeader className="mb-3 text-left">
+            <SheetTitle className="text-xl font-bold leading-tight">{product.name}</SheetTitle>
           </SheetHeader>
 
           <p className="text-sm leading-relaxed text-muted-foreground">
             {product.description}
           </p>
 
+          {/* Ingredientes */}
           {product.ingredients.length > 0 && (
-            <div className="mt-4">
-              <div className="flex items-center gap-2">
-                <ChefHatIcon size={15} />
+            <div className="mt-5 rounded-2xl bg-muted/60 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <ChefHatIcon size={14} className="text-primary" />
                 <h3 className="text-sm font-semibold">Ingredientes</h3>
               </div>
-              <ul className="mt-2 list-inside list-disc space-y-1">
+              <div className="flex flex-wrap gap-2">
                 {product.ingredients.map((ingredient) => (
-                  <li key={ingredient} className="text-sm text-muted-foreground">
+                  <span
+                    key={ingredient}
+                    className="rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground"
+                  >
                     {ingredient}
-                  </li>
+                  </span>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {/* Preço + quantidade */}
           <div className="mt-5 flex items-center justify-between">
-            <p className="text-2xl font-bold">{formatCurrency(product.price)}</p>
+            <div>
+              <p className="text-xs text-muted-foreground">Preço unitário</p>
+              <p className="text-2xl font-bold text-foreground">{formatCurrency(product.price)}</p>
+            </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 rounded-full"
+                className="h-10 w-10 rounded-full border-border"
                 disabled={quantity <= 1}
                 onClick={() => setQuantity((q) => q - 1)}
                 aria-label="Diminuir quantidade"
               >
-                <MinusIcon size={18} />
+                <MinusIcon size={16} />
               </Button>
-              <span className="w-6 text-center text-lg font-bold">{quantity}</span>
+              <span className="w-8 text-center text-lg font-bold">{quantity}</span>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 rounded-full"
+                className="h-10 w-10 rounded-full border-border"
                 onClick={() => setQuantity((q) => q + 1)}
                 aria-label="Aumentar quantidade"
               >
-                <PlusIcon size={18} />
+                <PlusIcon size={16} />
               </Button>
             </div>
           </div>
 
           {/* Observações */}
           <div className="mt-5">
-            <label className="mb-1.5 block text-sm font-medium">
-              Observações
+            <label className="mb-2 block text-sm font-medium">
+              Observações <span className="font-normal text-muted-foreground">(opcional)</span>
             </label>
             <Textarea
               rows={2}
               placeholder="Ex: sem cebola, bem passado..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="min-h-0 rounded-xl text-sm leading-relaxed"
+              className="min-h-0 rounded-xl border-border text-sm leading-relaxed"
             />
           </div>
 
+          {/* Botão adicionar */}
           <Button
-            className="mt-4 h-12 w-full rounded-full text-base font-semibold"
+            className="mt-5 h-13 w-full rounded-2xl text-sm font-semibold"
             onClick={handleAddToCart}
           >
-            Adicionar • {formatCurrency(product.price * quantity)}
+            <span>Adicionar ao pedido</span>
+            <span className="ml-auto font-bold">
+              {formatCurrency(product.price * quantity)}
+            </span>
           </Button>
         </div>
       </SheetContent>
