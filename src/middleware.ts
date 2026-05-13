@@ -4,7 +4,6 @@ const SECRET =
   process.env.NEXTAUTH_SECRET ?? "changeme-set-NEXTAUTH_SECRET-in-env";
 
 const ADMIN_MAX_AGE_MS = 8 * 60 * 60 * 1000;
-const KITCHEN_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 function hexToBytes(hex: string): ArrayBuffer {
   const pairs = hex.match(/.{1,2}/g) ?? [];
@@ -54,24 +53,6 @@ async function verifyToken(token: string, maxAgeMs: number): Promise<boolean> {
   }
 }
 
-async function verifyKitchenToken(
-  token: string,
-  slug: string,
-): Promise<boolean> {
-  try {
-    const decoded = atob(token);
-    const parts = decoded.split(":");
-    if (parts.length < 4) return false;
-
-    const tokenSlug = parts[1];
-    if (tokenSlug !== slug) return false;
-
-    return verifyToken(token, KITCHEN_MAX_AGE_MS);
-  } catch {
-    return false;
-  }
-}
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -82,23 +63,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const kitchenMatch = pathname.match(/^\/([^/]+)\/kitchen/);
-  if (kitchenMatch) {
-    const slug = kitchenMatch[1];
-    const kitchenCookie = request.cookies.get(`kitchen_${slug}`);
-    if (
-      !kitchenCookie?.value ||
-      !(await verifyKitchenToken(kitchenCookie.value, slug))
-    ) {
-      return NextResponse.redirect(
-        new URL(`/${slug}/kitchen/login`, request.url),
-      );
-    }
-  }
-
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/:slug/kitchen"],
+  matcher: ["/admin/:path*"],
 };
