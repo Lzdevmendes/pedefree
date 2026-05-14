@@ -44,15 +44,16 @@ const ProductDetails = memo(function ProductDetails({
         side="bottom"
         className="max-h-[90vh] overflow-y-auto rounded-t-3xl p-0 pb-safe"
       >
-        {/* Imagem com fundo suave */}
-        <div className="relative h-[200px] w-full overflow-hidden bg-muted sm:h-[240px]">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5" />
+        {/* Imagem do produto */}
+        <div className="relative h-[230px] w-full overflow-hidden sm:h-[270px]">
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
-            className="object-contain p-6"
+            className="object-cover"
           />
+          {/* Gradiente sutil no rodapé da imagem para transição */}
+          <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-background/30 to-transparent" />
         </div>
 
         <div className="p-5 pb-2">
