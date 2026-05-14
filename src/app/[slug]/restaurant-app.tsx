@@ -73,35 +73,40 @@ export default function RestaurantApp({ restaurant, isPaused }: RestaurantAppPro
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
-      {/* Fundo decorativo com gradiente */}
-      <div
-        className="absolute inset-0 -z-10"
-        aria-hidden="true"
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/12 via-background to-background" />
-        <div className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+      {/* Hero: foto de capa do restaurante */}
+      <div className="relative h-[44vh] w-full shrink-0">
+        <Image
+          src={restaurant.coverImageUrl}
+          alt={restaurant.name}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        {/* Overlay: transparente no topo, funde com o background no rodapé */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-background" />
       </div>
 
-      {/* Conteúdo principal */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 pt-safe">
-        {/* Logo e nome */}
-        <div className="animate-scale-in flex flex-col items-center gap-4">
+      {/* Conteúdo sobrepõe o hero pelo avatar */}
+      <div className="flex flex-1 flex-col items-center px-6 pb-12 pb-safe">
+        {/* Avatar centralizado, sobrepondo a divisão hero/conteúdo */}
+        <div className="animate-scale-in -mt-10 flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="absolute inset-0 rounded-3xl bg-primary/20 blur-xl scale-110" />
+            <div className="absolute inset-0 scale-110 rounded-3xl bg-primary/20 blur-xl" />
             <Image
               src={restaurant.avatarImageUrl}
               alt={restaurant.name}
-              width={100}
-              height={100}
+              width={80}
+              height={80}
               priority
-              className="relative rounded-3xl shadow-md"
+              className="relative rounded-3xl shadow-lg ring-4 ring-background"
             />
           </div>
-          <h2 className="text-base font-semibold text-foreground/70">{restaurant.name}</h2>
+          <h2 className="text-sm font-semibold text-foreground/60">{restaurant.name}</h2>
         </div>
 
         {/* Boas-vindas */}
-        <div className="animate-slide-up animate-delay-100 mt-8 max-w-xs space-y-2 text-center">
+        <div className="animate-slide-up animate-delay-100 mt-6 max-w-xs space-y-2 text-center">
           <h1 className="text-3xl font-bold tracking-tight">
             Seja bem-vindo! 👋
           </h1>
