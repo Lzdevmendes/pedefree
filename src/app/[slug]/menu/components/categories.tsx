@@ -64,6 +64,30 @@ function getOpenStatus(
   return { isOpen: false, label: "Fechado agora" };
 }
 
+const CATEGORY_EMOJI: Record<string, string> = {
+  "entradas": "🥗",
+  "frutos do mar": "🦑",
+  "peixes": "🐟",
+  "pizzas": "🍕",
+  "acompanhamentos": "🍚",
+  "bebidas": "🍹",
+  "sobremesas": "🍮",
+  "combos": "🎁",
+  "lanches": "🍔",
+  "fritas": "🍟",
+  "carnes": "🥩",
+  "saladas": "🥗",
+  "massas": "🍝",
+  "risotos": "🍚",
+  "grelhados": "🥩",
+  "doces": "🍬",
+  "sucos": "🥤",
+  "cervejas": "🍺",
+};
+
+const getCategoryEmoji = (name: string): string =>
+  CATEGORY_EMOJI[name.toLowerCase().trim()] ?? "🍽️";
+
 const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategoriesProps) => {
   const [selectedCategory, setSelectedCategory] =
     useState<MenuCategoriesWithProducts>(restaurant.menuCategories[0]);
@@ -207,13 +231,14 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category)}
-                  className={`h-8 shrink-0 rounded-full px-4 text-xs font-semibold transition-all duration-200 ${
+                  className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-all duration-200 ${
                     selectedCategory.id === category.id
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-muted text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
-                  {category.name}
+                  <span>{getCategoryEmoji(category.name)}</span>
+                  <span>{category.name}</span>
                 </button>
               ))}
             </div>
@@ -221,7 +246,10 @@ const RestaurantCategories = ({ restaurant, openingHours }: RestaurantCategories
           </ScrollArea>
 
           <div className="px-5 pb-1 pt-2">
-            <h3 className="text-sm font-semibold text-foreground/80">{selectedCategory.name}</h3>
+            <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground/80">
+              <span>{getCategoryEmoji(selectedCategory.name)}</span>
+              <span>{selectedCategory.name}</span>
+            </h3>
           </div>
           <Products products={selectedCategory.products} />
         </>
