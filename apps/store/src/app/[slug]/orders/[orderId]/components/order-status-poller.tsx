@@ -47,13 +47,14 @@ const STATUS_ORDER: Partial<Record<OrderStatus, number>> = {
 interface OrderStatusPollerProps {
   orderId: number;
   initialStatus: OrderStatus;
+  restaurantSlug: string;
 }
 
 const BASE_INTERVAL = 10_000;
 const MAX_FAILURES = 3;
 const MAX_BACKOFF = 60_000;
 
-const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) => {
+const OrderStatusPoller = ({ orderId, initialStatus, restaurantSlug }: OrderStatusPollerProps) => {
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const [connectionError, setConnectionError] = useState(false);
   const failureCount = useRef(0);
@@ -69,7 +70,10 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
 
     const poll = async () => {
       try {
-        const res = await fetch(`/api/orders/${orderId}`, { cache: "no-store" });
+        const res = await fetch(
+          `/api/orders/${orderId}?slug=${encodeURIComponent(restaurantSlug)}`,
+          { cache: "no-store" },
+        );
         if (res.ok) {
           const data = await res.json();
           failureCount.current = 0;
@@ -107,7 +111,7 @@ const OrderStatusPoller = ({ orderId, initialStatus }: OrderStatusPollerProps) =
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [orderId, status]);
+  }, [orderId, status, restaurantSlug]);
 
   if (status === "CANCELLED") {
     return (

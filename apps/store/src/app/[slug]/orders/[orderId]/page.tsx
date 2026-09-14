@@ -61,6 +61,7 @@ const OrderConfirmationPage = async ({
           <OrderStatusPoller
             orderId={order.id}
             initialStatus={order.status}
+            restaurantSlug={slug}
           />
         </div>
 
