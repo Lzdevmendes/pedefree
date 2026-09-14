@@ -289,10 +289,10 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
 
   const handleToggleProduct = useCallback(async (product: KitchenProduct) => {
     setTogglingProductId(product.id);
-    await kitchenToggleProduct(product.id, !product.isAvailable);
+    await kitchenToggleProduct(product.id, !product.isAvailable, slug);
     fetchProducts();
     setTogglingProductId(null);
-  }, [fetchProducts]);
+  }, [fetchProducts, slug]);
 
   const pending = useMemo(() => orders.filter((o) => o.status === "PENDING"), [orders]);
   const inPrep = useMemo(() => orders.filter((o) => o.status === "IN_PREPARATION"), [orders]);

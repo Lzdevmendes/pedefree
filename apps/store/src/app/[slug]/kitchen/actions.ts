@@ -176,7 +176,16 @@ export const getKitchenProducts = async (slug: string) => {
   });
 };
 
-export const kitchenToggleProduct = async (productId: string, isAvailable: boolean) => {
+export const kitchenToggleProduct = async (productId: string, isAvailable: boolean, slug: string) => {
+  const product = await db.product.findUnique({
+    where: { id: productId },
+    select: { restaurant: { select: { slug: true } } },
+  });
+
+  if (!product || product.restaurant.slug !== slug) {
+    throw new Error("Produto não encontrado");
+  }
+
   await db.product.update({ where: { id: productId }, data: { isAvailable } });
 };
 
