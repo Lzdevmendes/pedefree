@@ -99,7 +99,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
             name="name"
             required
             placeholder="Nome da categoria"
-            className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
           <Button type="submit" size="sm" className="rounded-full">
             Adicionar
@@ -117,7 +117,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
               <input
                 name="name"
                 required
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
             <div>
@@ -128,7 +128,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
                 step="0.01"
                 min="0"
                 required
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
           </div>
@@ -138,7 +138,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
               <select
                 name="menuCategoryId"
                 required
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <option value="">Selecione...</option>
                 {restaurant.menuCategories.map((cat) => (
@@ -152,7 +152,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
               <label className="mb-1 block text-xs font-medium">Badge</label>
               <select
                 name="badge"
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {BADGE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -168,7 +168,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
               name="imageUrl"
               type="url"
               required
-              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
           </div>
           <div>
@@ -177,7 +177,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
               name="description"
               required
               rows={2}
-              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
           </div>
           <div>
@@ -187,7 +187,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
             <textarea
               name="ingredients"
               rows={3}
-              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
           </div>
           <Button type="submit" size="sm" className="w-full rounded-full">
@@ -295,7 +295,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
                 name="code"
                 required
                 placeholder="EX: PROMO10"
-                className="w-full rounded-lg border px-3 py-2 text-sm uppercase outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border px-3 py-2 text-sm uppercase outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
             <div>
@@ -306,7 +306,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
                 min="1"
                 max="100"
                 required
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
             <div>
@@ -316,7 +316,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
                 type="number"
                 min="1"
                 placeholder="100"
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
           </div>
@@ -325,7 +325,7 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
             <input
               name="expiresAt"
               type="datetime-local"
-              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
           </div>
           <Button type="submit" size="sm" className="w-full rounded-full">
@@ -397,14 +397,14 @@ const RestaurantDetailPage = async ({ params }: PageProps) => {
                   type="time"
                   name={`open_${idx}`}
                   defaultValue={hours?.openTime ?? "08:00"}
-                  className="rounded-lg border px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary"
+                  className="rounded-lg border px-2 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
                 <span className="text-sm text-muted-foreground">até</span>
                 <input
                   type="time"
                   name={`close_${idx}`}
                   defaultValue={hours?.closeTime ?? "22:00"}
-                  className="rounded-lg border px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary"
+                  className="rounded-lg border px-2 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
                 <label className="flex items-center gap-1 text-sm">
                   <input

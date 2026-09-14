@@ -54,7 +54,7 @@ const EditProductPage = async ({ params }: PageProps) => {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label>Categoria *</Label>
-            <select name="menuCategoryId" required defaultValue={product.menuCategoryId} className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
+            <select name="menuCategoryId" required defaultValue={product.menuCategoryId} className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary">
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
@@ -62,7 +62,7 @@ const EditProductPage = async ({ params }: PageProps) => {
           </div>
           <div className="space-y-1">
             <Label>Badge</Label>
-            <select name="badge" defaultValue={product.badge ?? ""} className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
+            <select name="badge" defaultValue={product.badge ?? ""} className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary">
               {BADGE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
