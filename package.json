@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev": "concurrently -n store,admin -c blue,magenta \"npm run dev --workspace=apps/store\" \"npm run dev --workspace=apps/admin\"",
@@ -15,6 +16,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "test": "vitest run",
     "prisma:seed:gamboa": "ts-node ./prisma/seed-gamboa.ts"
   },
   "prisma": {
@@ -25,10 +27,11 @@
     "prisma": "^6.2.1"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^24",
     "concurrently": "^9.1.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.0"
   }
 }
