@@ -3,6 +3,7 @@
 import { ConsumptionMethod } from "@prisma/client";
 import { CheckCircle2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, TagIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -45,6 +46,7 @@ const CartSheet = ({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [tableNumber, setTableNumber] = useState(prefilledTable ?? "");
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   useEffect(() => {
     if (prefilledTable !== null) setTableNumber(prefilledTable);
@@ -91,6 +93,8 @@ const CartSheet = ({
       newErrors.phone = "Telefone é obrigatório para pedidos para levar";
     if (isDineIn && !tableNumber.trim())
       newErrors.table = "Número da mesa é obrigatório";
+    if (!consentAccepted)
+      newErrors.consent = "É necessário aceitar o uso dos seus dados para continuar";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -370,6 +374,31 @@ const CartSheet = ({
             <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3">
               <p className="text-sm text-muted-foreground">Total do pedido</p>
               <p className="font-bold">{formatCurrency(discountedTotal)}</p>
+            </div>
+
+            <div>
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-input"
+                  checked={consentAccepted}
+                  onChange={(e) => {
+                    setConsentAccepted(e.target.checked);
+                    setErrors((prev) => ({ ...prev, consent: "" }));
+                  }}
+                />
+                <span>
+                  Autorizo o uso dos meus dados (nome{isDineIn ? "" : " e telefone"}) para o
+                  processamento deste pedido, conforme a{" "}
+                  <Link href="/privacidade" target="_blank" className="underline">
+                    Política de Privacidade
+                  </Link>
+                  .
+                </span>
+              </label>
+              {errors.consent && (
+                <p className="mt-1 text-xs text-red-500">{errors.consent}</p>
+              )}
             </div>
 
             <div className="flex gap-3">
