@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/lib/prisma";
 
 import { adminLogout, deleteRestaurant } from "./actions";
+import { DeleteRestaurantButton } from "./delete-restaurant-button";
 
 const AdminPage = async () => {
   const restaurants = await db.restaurant.findMany({
@@ -95,26 +96,19 @@ const AdminPage = async () => {
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="sm" className="h-8 rounded-xl border-border text-xs">
-                    <Link href={`/${r.slug}?consumptionMethod=DINE_IN`} target="_blank">
+                    <Link
+                      href={`${process.env.NEXT_PUBLIC_STORE_URL}/${r.slug}?consumptionMethod=DINE_IN`}
+                      target="_blank"
+                    >
                       <ExternalLinkIcon size={13} />
                       Ver menu
                     </Link>
                   </Button>
-                  <form
-                    action={async () => {
-                      "use server";
-                      await deleteRestaurant(r.id);
-                    }}
-                  >
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      type="submit"
-                      className="h-8 rounded-xl text-xs text-red-500 hover:bg-red-50 hover:text-red-600"
-                    >
-                      Excluir
-                    </Button>
-                  </form>
+                  <DeleteRestaurantButton
+                    restaurantId={r.id}
+                    restaurantName={r.name}
+                    onDelete={deleteRestaurant}
+                  />
                 </div>
               </div>
             ))}
