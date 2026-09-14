@@ -1,23 +1,24 @@
 "use server";
 
+import { getCouponValidityError } from "@/lib/coupon-validation";
 import { db } from "@/lib/prisma";
+import { validateCouponSchema } from "@/lib/validation";
 
 export const validateCoupon = async (
   code: string,
   restaurantId: string,
 ): Promise<{ valid: true; discountPercent: number } | { valid: false; error: string }> => {
+  const parsed = validateCouponSchema.safeParse({ code, restaurantId });
+  if (!parsed.success) {
+    return { valid: false, error: "Cupom inválido" };
+  }
+
   const coupon = await db.coupon.findUnique({
-    where: { code: code.toUpperCase().trim() },
+    where: { code: parsed.data.code.toUpperCase().trim() },
   });
 
-  if (!coupon) return { valid: false, error: "Cupom não encontrado" };
-  if (coupon.restaurantId !== restaurantId)
-    return { valid: false, error: "Cupom inválido para este restaurante" };
-  if (!coupon.isActive) return { valid: false, error: "Cupom inativo" };
-  if (coupon.usedCount >= coupon.maxUses)
-    return { valid: false, error: "Cupom esgotado" };
-  if (coupon.expiresAt && coupon.expiresAt < new Date())
-    return { valid: false, error: "Cupom expirado" };
+  const error = getCouponValidityError(coupon, restaurantId);
+  if (error || !coupon) return { valid: false, error: error ?? "Cupom não encontrado" };
 
   return { valid: true, discountPercent: coupon.discountPercent };
 };

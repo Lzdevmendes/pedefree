@@ -3,7 +3,10 @@
 import { ConsumptionMethod } from "@prisma/client";
 
 import { CartItem } from "@/contexts/cart";
+import { getCouponValidityError } from "@/lib/coupon-validation";
+import { calculateDiscountedTotal } from "@/lib/pricing";
 import { db } from "@/lib/prisma";
+import { createOrderSchema } from "@/lib/validation";
 
 interface CreateOrderInput {
   restaurantId: string;
@@ -16,9 +19,18 @@ interface CreateOrderInput {
   fcmToken?: string;
 }
 
-export const createOrder = async ({
-  restaurantId, consumptionMethod, items, customerName, customerPhone, tableNumber, couponCode, fcmToken,
-}: CreateOrderInput): Promise<{ orderId: number; slug: string }> => {
+export const createOrder = async (
+  input: CreateOrderInput,
+): Promise<{ orderId: number; slug: string }> => {
+  const parsed = createOrderSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dados do pedido inválidos");
+  }
+
+  const {
+    restaurantId, consumptionMethod, items, customerName, customerPhone, tableNumber, couponCode, fcmToken,
+  } = parsed.data;
+
   const restaurant = await db.restaurant.findUnique({
     where: { id: restaurantId },
     select: { isPaused: true, slug: true },
@@ -53,14 +65,8 @@ export const createOrder = async ({
     const coupon = await db.coupon.findUnique({
       where: { code: couponCode.toUpperCase().trim() },
     });
-    if (
-      coupon &&
-      coupon.restaurantId === restaurantId &&
-      coupon.isActive &&
-      coupon.usedCount < coupon.maxUses &&
-      (!coupon.expiresAt || coupon.expiresAt > new Date())
-    ) {
-      total = subtotal * (1 - coupon.discountPercent / 100);
+    if (coupon && !getCouponValidityError(coupon, restaurantId)) {
+      total = calculateDiscountedTotal(subtotal, coupon.discountPercent);
       appliedCouponId = coupon.id;
       couponMaxUses = coupon.maxUses;
     }
