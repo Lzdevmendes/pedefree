@@ -14,6 +14,8 @@ Representa um restaurante cadastrado na plataforma.
 | tableCount      | Int     | Número de mesas                        |
 | isPaused        | Boolean | Pausa recebimento de pedidos           |
 
+**Exclusão:** `db.restaurant.delete()` é irreversível e cascateia (`onDelete: Cascade`) para `OpeningHours`, `MenuCategory`, `Product`, `Order` (e transitivamente `OrderProduct`, `Rating`) e `Coupon`. O painel admin exige confirmação explícita antes de disparar a exclusão (ver `deleteRestaurant` em `apps/admin/src/app/admin/actions.ts`).
+
 ### Order
 Pedido feito pelo cliente.
 

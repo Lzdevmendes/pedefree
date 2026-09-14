@@ -10,10 +10,18 @@ PedeFree é uma plataforma de cardápio digital e pedidos online para restaurant
 apps/
 ├── admin/   → Painel do dono do restaurante (porta 3015 em dev)
 └── store/   → Loja do cliente / cozinha (porta 3013 em dev)
+packages/
+└── shared/  → @pedefree/shared — Prisma client, rate-limit, cn() e UI base compartilhados
 ```
+
+### Pacote compartilhado (`packages/shared`)
+- Única fonte de verdade para código antes duplicado entre `admin` e `store`: `db` (Prisma client singleton), `checkRateLimit`/`resetRateLimit`, `cn()` e os componentes base de UI (`button`, `card`, `input`, `sheet`, `label`, `scroll-area`, `textarea`).
+- Cada app importa via `@pedefree/shared` (e `@pedefree/shared/ui/*` para os componentes); os arquivos locais em `lib/` e `components/ui/` de cada app são shims de reexportação, então o caminho de import (`@/lib/prisma`, `@/components/ui/button`) não mudou para o resto do código.
+- Requer `transpilePackages: ["@pedefree/shared"]` no `next.config.ts` de cada app.
 
 ### Admin (`apps/admin`)
 - Cadastro e edição de restaurantes
+- Exclusão de restaurante — ação irreversível com confirmação obrigatória (`AlertDialog`) e cascata no banco (produtos, categorias, pedidos, cupons e horários do restaurante são apagados junto)
 - Gerenciamento de produtos e categorias
 - Visualização de pedidos e analytics
 - Exportação de pedidos (CSV)
@@ -56,6 +64,16 @@ Cozinha
   → apps/store/:slug/kitchen      → visualiza e atualiza pedidos (senha protegida)
   → Firebase FCM                  → recebe notificação de novo pedido
 ```
+
+## SEO e Legal
+
+- `apps/store` expõe `robots.ts`, `sitemap.ts` (dinâmico, lista restaurantes ativos), `opengraph-image.tsx` por restaurante (via `next/og`) e JSON-LD (`schema.org/Restaurant`) na página `/[slug]`. `apps/admin` bloqueia indexação via `robots.ts` (painel autenticado).
+- Páginas `/privacidade` e `/termos` em `apps/store` — contêm placeholders `[PENDENTE]` que precisam de dados reais da empresa e revisão jurídica antes de publicar.
+
+## Testes
+
+- Vitest configurado na raiz (`vitest.config.mts`), rodando com `npm run test`.
+- Cobre lógica pura extraída para arquivos sem dependência de banco: `apps/store/src/lib/pricing.ts`, `coupon-validation.ts`, `utils.ts` e `packages/shared/src/rate-limit.ts`.
 
 ## Prisma (raiz do monorepo)
 

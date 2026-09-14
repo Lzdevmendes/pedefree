@@ -20,11 +20,13 @@ Monorepo com dois apps Next.js independentes:
 
 ```
 apps/
-├── admin/   → painel do dono do restaurante  (porta 3015 em dev)
-└── store/   → loja/cozinha/QR codes          (porta 3013 em dev)
-prisma/      → schema PostgreSQL compartilhado
-docs/        → documentação do projeto
-agents/      → contexto para IA (domínio, arquitetura, stack, glossário)
+├── admin/     → painel do dono do restaurante  (porta 3015 em dev)
+└── store/     → loja/cozinha/QR codes          (porta 3013 em dev)
+packages/
+└── shared/    → @pedefree/shared — Prisma client, rate-limit, cn() e UI base compartilhados
+prisma/        → schema PostgreSQL compartilhado
+docs/          → documentação do projeto
+agents/        → contexto para IA (domínio, arquitetura, stack, glossário)
 ```
 
 ### Fluxo do cliente
@@ -120,7 +122,9 @@ Acesse:
 | `npm run db:generate`        | `prisma generate`                        |
 | `npm run db:push`            | `prisma db push`                         |
 | `npm run db:seed`            | Seed padrão                              |
+| `npm run test`                | Roda a suíte de testes (Vitest)          |
 | `npm run prisma:seed:gamboa` | Seed restaurante Gamboa                  |
+| `npx tsx prisma/create-bigjohn.ts` | Seed manual do restaurante Big Jhon (dados de teste, não faz parte do fluxo padrão) |
 
 ---
 

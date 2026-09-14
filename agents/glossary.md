@@ -5,6 +5,7 @@ Tenant principal do sistema. Cada restaurante tem um `slug` único que aparece n
 - `isPaused: Boolean` — quando true, impede criação de pedidos (verificado em `createOrder`)
 - `kitchenPassword: String` — hash bcrypt da senha da cozinha (sem default — deve ser definida no seed)
 - `primaryColor: String` — HSL sem parênteses (ex: `"42 100% 50%"`) usado como CSS custom property
+- **Exclusão é irreversível e cascateia** (`onDelete: Cascade` no schema): apaga junto `MenuCategory`, `Product`, `Order`/`OrderProduct`/`Rating`, `Coupon` e `OpeningHours` do restaurante. O admin confirma via `AlertDialog` (`apps/admin/src/app/admin/delete-restaurant-button.tsx`) antes de chamar `deleteRestaurant` em `apps/admin/src/app/admin/actions.ts`.
 
 ## MenuCategory
 Agrupamento de produtos no cardápio (ex: "Lanches", "Bebidas").
