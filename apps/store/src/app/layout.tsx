@@ -19,6 +19,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_STORE_URL || "http://localhost:3013"),
   title: "PedeFree",
   description: "Cardápio digital e pedidos online para restaurantes e fast foods locais.",
   manifest: "/manifest.json",

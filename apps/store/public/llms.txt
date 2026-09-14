@@ -1,0 +1,18 @@
+# PedeFree
+
+> PedeFree é um SaaS de cardápio digital por QR code para restaurantes e fast foods locais no Brasil. Cada restaurante tem sua própria página em `/{slug}` com cardápio, carrinho e checkout.
+
+- Clientes acessam o cardápio de um restaurante escaneando um QR code ou visitando `/{slug}`.
+- Pedidos podem ser feitos para consumo no local (mesa) ou para retirada.
+- Após finalizar o pedido, o cliente acompanha o status em tempo real em `/{slug}/orders/{orderId}`.
+- Restaurantes gerenciam cardápio, pedidos e a cozinha através de um painel administrativo separado (não indexado publicamente).
+
+## Páginas públicas
+
+- `/{slug}` — cardápio do restaurante
+- `/{slug}/orders/{orderId}` — status de um pedido específico
+
+## Observações
+
+- Preços são exibidos em Real brasileiro (BRL).
+- Este arquivo descreve o produto para agentes de IA; não representa dados de um restaurante específico.
