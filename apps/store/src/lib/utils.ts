@@ -1,9 +1,4 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+export { cn } from "@pedefree/shared";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -14,4 +9,3 @@ export const formatCurrency = (value: number): string => currencyFormatter.forma
 
 export const normalizePhone = (phone: string): string =>
   phone.replace(/\D/g, "");
-

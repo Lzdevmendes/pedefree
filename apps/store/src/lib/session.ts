@@ -6,7 +6,6 @@ const SECRET = (() => {
   return s;
 })();
 
-const ADMIN_MAX_AGE_MS = 8 * 60 * 60 * 1000;
 const KITCHEN_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 function createSignature(payload: string): string {
@@ -40,19 +39,6 @@ function decodeAndValidateToken(token: string, maxAgeMs: number): string[] | nul
   } catch {
     return null;
   }
-}
-
-/** Gera um token HMAC-SHA256 para a sessão admin. */
-export function signAdminSession(email: string): string {
-  const payload = `admin:${email}:${Date.now()}`;
-  const sig = createSignature(payload);
-  return encodeToken(payload, sig);
-}
-
-/** Verifica e retorna o email se o token for válido, ou null se inválido. */
-export function verifyAdminSession(token: string): string | null {
-  const parts = decodeAndValidateToken(token, ADMIN_MAX_AGE_MS);
-  return parts ? (parts[1] ?? null) : null;
 }
 
 /** Gera um token HMAC para a sessão de cozinha (por slug). */

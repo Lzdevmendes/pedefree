@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   outputFileTracingRoot: join(__dirname, "../../"),
+  transpilePackages: ["@pedefree/shared"],
   images: {
     remotePatterns: [
       {
