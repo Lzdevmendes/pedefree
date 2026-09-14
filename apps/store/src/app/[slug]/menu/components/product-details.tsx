@@ -42,7 +42,7 @@ const ProductDetails = memo(function ProductDetails({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="max-h-[90vh] overflow-y-auto rounded-t-3xl p-0 pb-safe"
+        className="max-h-[90dvh] overflow-y-auto rounded-t-3xl p-0 pb-safe"
       >
         {/* Imagem do produto */}
         <div className="relative h-[230px] w-full overflow-hidden sm:h-[270px]">

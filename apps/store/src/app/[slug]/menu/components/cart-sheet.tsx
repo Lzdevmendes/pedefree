@@ -126,7 +126,7 @@ const CartSheet = ({
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent
         side="bottom"
-        className="max-h-[92vh] overflow-y-auto rounded-t-3xl p-0 pb-safe"
+        className="max-h-[92dvh] overflow-y-auto rounded-t-3xl p-0 pb-safe"
       >
         <SheetHeader className="border-b border-border/60 px-5 py-4">
           <SheetTitle className="text-base font-semibold">
