@@ -161,7 +161,7 @@ export const getKitchenOrders = async (slug: string) => {
     },
     include: {
       orderProducts: {
-        include: { product: { select: { name: true } } },
+        include: { product: { select: { name: true, ingredients: true } } },
       },
     },
     orderBy: { createdAt: "asc" },
@@ -208,7 +208,7 @@ export const getKitchenOrderHistory = async (slug: string) => {
     },
     include: {
       orderProducts: {
-        include: { product: { select: { name: true } } },
+        include: { product: { select: { name: true, ingredients: true } } },
       },
     },
     orderBy: { updatedAt: "desc" },

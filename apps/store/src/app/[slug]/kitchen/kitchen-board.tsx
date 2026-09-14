@@ -44,7 +44,7 @@ function playNotificationSound() {
 interface OrderProduct {
   quantity: number;
   notes?: string | null;
-  product: { name: string };
+  product: { name: string; ingredients: string[] };
 }
 
 interface Order {
@@ -124,8 +124,13 @@ const OrderCard = memo(function OrderCard({
             <span className="font-semibold">
               {op.quantity}x {op.product.name}
             </span>
+            {op.product.ingredients.length > 0 && (
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {op.product.ingredients.join(", ")}
+              </p>
+            )}
             {op.notes && (
-              <p className="mt-0.5 text-xs text-muted-foreground">↳ {op.notes}</p>
+              <p className="mt-0.5 text-xs font-medium text-foreground">↳ {op.notes}</p>
             )}
           </li>
         ))}
@@ -322,6 +327,7 @@ const KitchenBoard = ({ slug }: KitchenBoardProps) => {
                 await toggleRestaurantPause(slug);
                 setIsPaused((v) => !v);
               }}
+              aria-label={isPaused ? "Pausado — clique para aceitar pedidos" : "Clique para pausar pedidos"}
               title={isPaused ? "Pausado — clique para aceitar pedidos" : "Clique para pausar pedidos"}
             >
               {isPaused ? <PauseCircleIcon size={18} /> : <PlayCircleIcon size={18} />}
