@@ -17,6 +17,8 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prisma:seed:gamboa": "ts-node ./prisma/seed-gamboa.ts"
   },
   "prisma": {
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^24",
+    "@vitest/coverage-v8": "^5.0.0",
     "concurrently": "^9.1.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "ts-node": "^10.9.2",
