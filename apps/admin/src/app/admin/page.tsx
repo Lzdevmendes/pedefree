@@ -7,6 +7,8 @@ import { db } from "@/lib/prisma";
 import { adminLogout, deleteRestaurant } from "./actions";
 import { DeleteRestaurantButton } from "./delete-restaurant-button";
 
+export const dynamic = "force-dynamic";
+
 const AdminPage = async () => {
   const restaurants = await db.restaurant.findMany({
     orderBy: { createdAt: "desc" },

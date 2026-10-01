@@ -10,7 +10,7 @@
     "dev": "concurrently -n store,admin -c blue,magenta \"npm run dev --workspace=apps/store\" \"npm run dev --workspace=apps/admin\"",
     "dev:store": "npm run dev --workspace=apps/store",
     "dev:admin": "npm run dev --workspace=apps/admin",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspaces --if-present",
     "build:store": "npm run build --workspace=apps/store",
     "build:admin": "npm run build --workspace=apps/admin",
     "db:generate": "prisma generate",
