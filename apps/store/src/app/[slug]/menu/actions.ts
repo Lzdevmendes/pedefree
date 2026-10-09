@@ -17,6 +17,7 @@ interface CreateOrderInput {
   tableNumber?: number;
   couponCode?: string;
   fcmToken?: string;
+  idempotencyKey?: string;
 }
 
 export const createOrder = async (
@@ -28,8 +29,18 @@ export const createOrder = async (
   }
 
   const {
-    restaurantId, consumptionMethod, items, customerName, customerPhone, tableNumber, couponCode, fcmToken,
+    restaurantId, consumptionMethod, items, customerName, customerPhone, tableNumber, couponCode, fcmToken, idempotencyKey
   } = parsed.data;
+
+  if (idempotencyKey) {
+    const existingOrder = await db.order.findUnique({
+      where: { idempotencyKey },
+      include: { restaurant: { select: { slug: true } } },
+    });
+    if (existingOrder) {
+      return { orderId: existingOrder.id, slug: existingOrder.restaurant.slug };
+    }
+  }
 
   const restaurant = await db.restaurant.findUnique({
     where: { id: restaurantId },
@@ -97,6 +108,7 @@ export const createOrder = async (
         customerPhone,
         tableNumber,
         fcmToken: fcmToken ?? null,
+        idempotencyKey: idempotencyKey ?? null,
         orderProducts: {
           createMany: {
             data: items.map((item) => ({

@@ -17,6 +17,7 @@ export const createOrderSchema = z.object({
   tableNumber: z.number().int().positive().optional(),
   couponCode: z.string().trim().max(50).optional(),
   fcmToken: z.string().max(500).optional(),
+  idempotencyKey: z.string().optional(),
 });
 
 export const validateCouponSchema = z.object({
