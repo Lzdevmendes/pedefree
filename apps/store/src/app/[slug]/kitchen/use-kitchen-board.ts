@@ -40,8 +40,8 @@ function playNotificationSound() {
     beep(0);
     beep(0.45);
     setTimeout(() => ctx.close(), 3000);
-  } catch {
-    // Web Audio não disponível
+  } catch (error) {
+    console.warn("[KitchenBoard] Web Audio não disponível:", error);
   }
 }
 

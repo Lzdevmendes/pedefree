@@ -69,11 +69,14 @@ const OrderStatusPoller = ({ orderId, initialStatus, restaurantSlug }: OrderStat
         : BASE_INTERVAL;
 
     const poll = async () => {
+      const controller = new AbortController();
+      const abortTimeout = setTimeout(() => controller.abort(), 8000);
       try {
         const res = await fetch(
           `/api/orders/${orderId}?slug=${encodeURIComponent(restaurantSlug)}`,
-          { cache: "no-store" },
+          { cache: "no-store", signal: controller.signal },
         );
+        clearTimeout(abortTimeout);
         if (res.ok) {
           const data = await res.json();
           failureCount.current = 0;
@@ -83,7 +86,9 @@ const OrderStatusPoller = ({ orderId, initialStatus, restaurantSlug }: OrderStat
           failureCount.current += 1;
           if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
         }
-      } catch {
+      } catch (error) {
+        clearTimeout(abortTimeout);
+        console.error('[OrderStatusPoller] Erro ao buscar status:', error);
         failureCount.current += 1;
         if (failureCount.current >= MAX_FAILURES) setConnectionError(true);
       }
